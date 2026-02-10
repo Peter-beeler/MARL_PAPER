@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+gemini_raw_output.txt
+gemini_prompt_raw_output.txt
