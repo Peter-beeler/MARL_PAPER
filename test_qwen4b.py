@@ -22,8 +22,8 @@ import prompt_template
 MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"       # Qwen3-4B (instruct-tuned by default)
 MAX_NEW_TOKENS_THINKING = 256      # tokens for stage-1 reasoning
 MAX_NEW_TOKENS_ACTION = 50          # tokens for stage-2 action JSON
-MAX_ENV_STEPS = 5              # episode length
-NUM_AGENTS = 1
+MAX_ENV_STEPS = 20            # episode length
+NUM_AGENTS = 3
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Valid high-level actions that map to helper functions
