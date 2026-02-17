@@ -1,120 +1,265 @@
 import random
-from typing import Tuple, Optional, List
+from typing import Tuple, Dict, Any, List
 
-# Action Constants matching env_move.py
-ACT_STAY = 0
-ACT_EAT = 1
-ACT_CLEAN = 2
-ACT_UP = 3
-ACT_DOWN = 4
-ACT_LEFT = 5
-ACT_RIGHT = 6
-
-def get_agent_pos(env, agent_id: int) -> Tuple[int, int]:
-    """Retrieves the current (x, y) position of an agent."""
-    return env.agents[agent_id]
-
-def get_nearest_item(env, agent_id: int, item_char: str) -> Optional[Tuple[int, int]]:
+def get_observation_description(env: Any, agent_id: int) -> str:
     """
-    Finds the nearest item of a specific type ('a' for apple, '#' for dirt).
-    Returns (x, y) of the item or None if none exist.
+    Generates a natural language description of the agent's global position
+    and the objects visible within its local observation window (5x3).
+    
+    Args:
+        env: The CleanupEnvMove instance.
+        agent_id: The ID of the agent.
+        
+    Returns:
+        A string description.
     """
-    ax, ay = get_agent_pos(env, agent_id)
+    if agent_id not in env.agents:
+        return "You are not in the environment."
+
+    ax, ay = env.agents[agent_id]
+    
+    # Define the local window bounds (radius 2 horizontal, 1 vertical)
+    half_w = 2
+    half_h = 1
+    x_min = max(0, ax - half_w)
+    x_max = min(env.width - 1, ax + half_w)
+    y_min = max(0, ay - half_h)
+    y_max = min(env.height - 1, ay + half_h)
+
+    visible_objects = []
+
+    # Scan for items (apples and dirt)
+    for y in range(y_min, y_max + 1):
+        for x in range(x_min, x_max + 1):
+            item = env.items[y][x]
+            if item == 'a':
+                visible_objects.append(f"an apple at ({x}, {y})")
+            elif item == '#':
+                visible_objects.append(f"dirt at ({x}, {y})")
+            
+            # Check for other agents
+            for other_id, pos in env.agents.items():
+                if other_id != agent_id and pos == (x, y):
+                    visible_objects.append(f"agent {other_id} at ({x}, {y})")
+
+    # Construct the sentence
+    desc = f"You are at ({ax}, {ay})."
+    if not visible_objects:
+        desc += " You see nothing of interest nearby."
+    else:
+        # Join with commas and 'and'
+        if len(visible_objects) == 1:
+            desc += f" You see {visible_objects[0]}."
+        else:
+            joined = ", ".join(visible_objects[:-1]) + f" and {visible_objects[-1]}"
+            desc += f" You see {joined}."
+
+    return desc
+
+
+def move_to(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
+    """
+    Calculates the next step to move towards a target coordinate.
+    
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        coord_x: Target X coordinate.
+        coord_y: Target Y coordinate.
+        
+    Returns:
+        Tuple (action_string, is_done). 
+        action_string is 'up', 'down', 'left', 'right', or 'stay'.
+        is_done is True if the agent is already at the target.
+    """
+    if agent_id not in env.agents:
+        return "stay", True
+
+    curr_x, curr_y = env.agents[agent_id]
+
+    if curr_x == coord_x and curr_y == coord_y:
+        return "stay", True
+
+    # Simple Manhattan pathfinding
+    # Prioritize X movement, then Y movement (arbitrary choice)
+    if curr_x < coord_x:
+        return "right", False
+    elif curr_x > coord_x:
+        return "left", False
+    elif curr_y < coord_y:
+        return "down", False
+    elif curr_y > coord_y:
+        return "up", False
+    
+    return "stay", False
+
+
+def clean_at(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
+    """
+    Moves to the target coordinate and cleans it.
+    
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        coord_x: Target X coordinate.
+        coord_y: Target Y coordinate.
+        
+    Returns:
+        Tuple (action_string, is_done).
+        Returns a movement action if not at target.
+        Returns 'clean' if at target and dirt exists.
+        Returns 'stay' and is_done=True if at target and no dirt exists.
+    """
+    if agent_id not in env.agents:
+        return "stay", True
+
+    curr_x, curr_y = env.agents[agent_id]
+
+    # If not at target, move there
+    if (curr_x, curr_y) != (coord_x, coord_y):
+        if curr_x < coord_x:
+            return "right", False
+        elif curr_x > coord_x:
+            return "left", False
+        elif curr_y < coord_y:
+            return "down", False
+        elif curr_y > coord_y:
+            return "up", False
+    
+    # If at target, check for dirt
+    item = env.items[curr_y][curr_x]
+    if item == '#':
+        return "clean", False # Action is clean, task not technically "done" until cleaned
+    else:
+        # No dirt here, task is done (or impossible)
+        return "stay", True
+
+
+def eat_at(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
+    """
+    Moves to the target coordinate and eats an apple.
+    
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        coord_x: Target X coordinate.
+        coord_y: Target Y coordinate.
+        
+    Returns:
+        Tuple (action_string, is_done).
+        Returns a movement action if not at target.
+        Returns 'eat' if at target and apple exists.
+        Returns 'stay' and is_done=True if at target and no apple exists.
+    """
+    if agent_id not in env.agents:
+        return "stay", True
+
+    curr_x, curr_y = env.agents[agent_id]
+
+    # If not at target, move there
+    if (curr_x, curr_y) != (coord_x, coord_y):
+        if curr_x < coord_x:
+            return "right", False
+        elif curr_x > coord_x:
+            return "left", False
+        elif curr_y < coord_y:
+            return "down", False
+        elif curr_y > coord_y:
+            return "up", False
+            
+    # If at target, check for apple
+    item = env.items[curr_y][curr_x]
+    if item == 'a':
+        return "eat", False
+    else:
+        # No apple here
+        return "stay", True
+
+
+def random_explore(env: Any, agent_id: int) -> Tuple[str, bool]:
+    """
+    Returns a random valid movement action.
+    
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        
+    Returns:
+        Tuple (action_string, is_done). is_done is always False.
+    """
+    actions = ["up", "down", "left", "right"]
+    return random.choice(actions), False
+
+
+def find_nearest_dirt(env: Any, agent_id: int) -> Dict[str, Any]:
+    """
+    Locates the nearest dirt ('#') globally.
+    
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        
+    Returns:
+        Dict with keys 'found' (bool), 'coord_x', 'coord_y', 'distance'.
+        If not found, 'found' is False.
+    """
+    if agent_id not in env.agents:
+        return {'found': False}
+
+    ax, ay = env.agents[agent_id]
+    nearest_dist = float('inf')
     nearest_pos = None
-    min_dist = float('inf')
 
-    # Scan the global grid
     for y in range(env.height):
         for x in range(env.width):
-            if env.items[y][x] == item_char:
-                # Euclidean distance squared is sufficient for comparison
-                dist = (x - ax)**2 + (y - ay)**2
-                if dist < min_dist:
-                    min_dist = dist
+            if env.items[y][x] == '#':
+                dist = abs(x - ax) + abs(y - ay) # Manhattan distance
+                if dist < nearest_dist:
+                    nearest_dist = dist
                     nearest_pos = (x, y)
     
-    return nearest_pos
+    if nearest_pos:
+        return {
+            'found': True,
+            'coord_x': nearest_pos[0],
+            'coord_y': nearest_pos[1],
+            'distance': nearest_dist
+        }
+    return {'found': False}
 
-def move_to(env, agent_id: int, target_pos: Tuple[int, int]) -> Tuple[int, bool]:
+
+def find_nearest_apple(env: Any, agent_id: int) -> Dict[str, Any]:
     """
-    Calculates the next move to get closer to target_pos.
+    Locates the nearest apple ('a') globally.
     
+    Args:
+        env: The environment instance.
+        agent_id: The agent ID.
+        
     Returns:
-        (action, arrived): 
-        - action: The int action to take (UP, DOWN, LEFT, RIGHT, or STAY).
-        - arrived: True if the agent is currently AT the target_pos.
+        Dict with keys 'found' (bool), 'coord_x', 'coord_y', 'distance'.
+        If not found, 'found' is False.
     """
-    ax, ay = get_agent_pos(env, agent_id)
-    tx, ty = target_pos
+    if agent_id not in env.agents:
+        return {'found': False}
 
-    if ax == tx and ay == ty:
-        return ACT_STAY, True
+    ax, ay = env.agents[agent_id]
+    nearest_dist = float('inf')
+    nearest_pos = None
 
-    dx = tx - ax
-    dy = ty - ay
-
-    # Simple greedy pathfinding: move along the axis with the largest difference
-    # This helps minimize "stair-stepping" which can be inefficient in crowded grids
-    if abs(dx) > abs(dy):
-        return (ACT_RIGHT if dx > 0 else ACT_LEFT), False
-    else:
-        # Remember: y increases downwards in this env
-        return (ACT_DOWN if dy > 0 else ACT_UP), False
-
-def smart_clean_step(env, agent_id: int) -> int:
-    """
-    High-level behavior: Find dirt, move to it, clean it.
+    for y in range(env.height):
+        for x in range(env.width):
+            if env.items[y][x] == 'a':
+                dist = abs(x - ax) + abs(y - ay)
+                if dist < nearest_dist:
+                    nearest_dist = dist
+                    nearest_pos = (x, y)
     
-    Logic:
-    1. If standing on dirt, CLEAN.
-    2. If not, find nearest dirt and move towards it.
-    3. If no dirt exists, random walk (patrol).
-    """
-    ax, ay = get_agent_pos(env, agent_id)
-    
-    # Check if currently on dirt
-    if env.items[ay][ax] == '#':
-        return ACT_CLEAN
-
-    # Find nearest dirt
-    target = get_nearest_item(env, agent_id, '#')
-    
-    if target:
-        action, arrived = move_to(env, agent_id, target)
-        if arrived:
-            return ACT_CLEAN
-        return action
-    
-    # No dirt found? Random patrol
-    return random.choice([ACT_UP, ACT_DOWN, ACT_LEFT, ACT_RIGHT])
-
-def smart_forage_step(env, agent_id: int) -> int:
-    """
-    High-level behavior: Find apple, move to it, eat it.
-    
-    Logic:
-    1. If standing on apple, EAT.
-    2. If not, find nearest apple and move towards it.
-    3. If no apples exist, default to cleaning behavior (to spawn more apples).
-    """
-    ax, ay = get_agent_pos(env, agent_id)
-
-    # Check if currently on apple
-    if env.items[ay][ax] == 'a':
-        return ACT_EAT
-
-    # Find nearest apple
-    target = get_nearest_item(env, agent_id, 'a')
-
-    if target:
-        action, arrived = move_to(env, agent_id, target)
-        if arrived:
-            return ACT_EAT
-        return action
-
-    # No apples? Help clean up to spawn them
-    return smart_clean_step(env, agent_id)
-
-def random_walk(env, agent_id: int) -> int:
-    """Returns a random movement action."""
-    return random.choice([ACT_UP, ACT_DOWN, ACT_LEFT, ACT_RIGHT])
+    if nearest_pos:
+        return {
+            'found': True,
+            'coord_x': nearest_pos[0],
+            'coord_y': nearest_pos[1],
+            'distance': nearest_dist
+        }
+    return {'found': False}

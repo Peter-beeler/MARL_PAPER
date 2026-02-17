@@ -1,69 +1,81 @@
 # Cleanup Environment Helpers
 
-This module provides high-level abstractions for the `CleanupEnvMove` environment (`env_move.py`). It allows you to control agents using goals (e.g., "go clean", "go eat") rather than calculating raw grid coordinates and action integers manually.
+This package provides high-level helper functions for the `CleanupEnvMove` environment. These functions allow agents to perform complex tasks (like navigation and interaction) and interpret observations using natural language.
 
-## Installation
+## Coordinate System
+The environment uses a grid coordinate system:
+- **(0, 0)** is the **Top-Left** corner.
+- **X** increases to the Right.
+- **Y** increases Downward.
 
-Ensure `helpers.py` is in the same directory as `env_move.py`.
+## Usage
 
-## Usage Example
+These functions are designed to be called by an agent loop. The agent can output a JSON command, which you can map to these functions.
 
-Here is how to run a simulation where Agent 1 focuses on cleaning (to spawn apples) and Agent 2 focuses on eating.
+### Observation Helper
+
+#### `get_observation_description(env, agent_id)`
+Translates the agent's local grid observation into a natural language string.
+- **Returns:** String (e.g., *"You are at (2,3). You see an apple at (2,4) and dirt at (1,3)."*)
+
+### Action Helpers
+
+These functions return the **immediate next action** required to achieve a goal. They should be called in a loop until `is_done` is True.
+
+#### `move_to(env, agent_id, coord_x, coord_y)`
+Navigates the agent toward a specific coordinate.
+- **Returns:** `(action_str, is_done)`
+- **Example:** `('up', False)` or `('stay', True)`
+
+#### `clean_at(env, agent_id, coord_x, coord_y)`
+Navigates to the coordinate and performs the 'clean' action if dirt is present.
+- **Returns:** `(action_str, is_done)`
+- **Logic:** Moves to target -> Cleans if dirt exists -> Returns done if clean.
+
+#### `eat_at(env, agent_id, coord_x, coord_y)`
+Navigates to the coordinate and performs the 'eat' action if an apple is present.
+- **Returns:** `(action_str, is_done)`
+
+#### `random_explore(env, agent_id)`
+Returns a random movement action (up, down, left, right).
+- **Returns:** `(action_str, False)`
+
+### Information Helpers
+
+These functions help the agent decide *where* to go.
+
+#### `find_nearest_dirt(env, agent_id)`
+Scans the entire grid for the closest dirt.
+- **Returns:** `{'found': bool, 'coord_x': int, 'coord_y': int, 'distance': int}`
+
+#### `find_nearest_apple(env, agent_id)`
+Scans the entire grid for the closest apple.
+- **Returns:** `{'found': bool, 'coord_x': int, 'coord_y': int, 'distance': int}`
+
+## Integration Example
+
+If an LLM agent outputs the following JSON:
+
+json
+{
+    "action": "move_to",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 5,
+        "coord_y": 3
+    }
+}
 
 
-from env_move import CleanupEnvMove
+You can execute it in Python like this:
+
+
 import helpers
 
-env = CleanupEnvMove()
-obs = env.reset()
+# ... inside your game loop ...
+cmd = agent_response_json
+func = getattr(helpers, cmd['action'])
+action_str, is_done = func(env, cmd['agent_id'], **cmd['args'])
 
-for _ in range(50):
-    actions = {}
-    
-    # Agent 1: The Janitor (Focuses on Dirt)
-    actions[1] = helpers.smart_clean_step(env, 1)
-    
-    # Agent 2: The Forager (Focuses on Apples)
-    actions[2] = helpers.smart_forage_step(env, 2)
-    
-    # Agent 3: Random Walker
-    actions[3] = helpers.random_walk(env, 3)
-
-    obs, rewards, done, info = env.step(actions)
-    print(env.render())
-    
-    if done:
-        break
-
-
-## API Reference
-
-### Constants
-The file exports action constants matching the environment:
-`ACT_STAY`, `ACT_EAT`, `ACT_CLEAN`, `ACT_UP`, `ACT_DOWN`, `ACT_LEFT`, `ACT_RIGHT`.
-
-### Core Functions
-
-#### `move_to(env, agent_id, target_pos)`
-Calculates the next directional step to reach a specific (x, y) coordinate.
-- **Returns:** `(action_int, arrived_bool)`
-- `arrived_bool` is True if the agent is already at the target coordinates.
-
-#### `get_nearest_item(env, agent_id, item_char)`
-Scans the global grid to find the closest item of a specific type.
-- `item_char`: `'#'` for dirt, `'a'` for apples.
-- **Returns:** `(x, y)` tuple or `None` if no items exist.
-
-### High-Level Behaviors
-
-#### `smart_clean_step(env, agent_id)`
-Executes a full logic loop for cleaning:
-1. If standing on dirt -> **CLEAN**.
-2. Else, find nearest dirt -> **MOVE** towards it.
-3. If no dirt exists -> **RANDOM WALK**.
-
-#### `smart_forage_step(env, agent_id)`
-Executes a full logic loop for eating:
-1. If standing on apple -> **EAT**.
-2. Else, find nearest apple -> **MOVE** towards it.
-3. If no apples exist -> Fallback to **CLEAN** logic (since cleaning spawns apples).
+# Execute the low-level action
+obs, rewards, done, info = env.step({cmd['agent_id']: action_str})

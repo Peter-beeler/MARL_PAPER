@@ -1,120 +1,161 @@
-"""
-Prompt templates for the Cleanup Environment (env_move.py).
-This module generates messages for an LLM agent to make decisions based on
-high-level helper functions defined in helpers.py.
-"""
-
 import json
+from typing import List, Dict, Any, Optional
+import helpers
 
-def get_system_prompt():
+def get_system_context() -> str:
     """
-    Returns the system prompt describing the environment, rules, and available high-level actions.
+    Returns the static context describing the game rules and mechanics.
     """
-    return """You are an autonomous AI agent playing a cooperative 'Cleanup' game in a 2D grid world.
+    return """
+You are an autonomous AI agent playing a cooperative grid-world game named 'Cleanup'.
 
-### ENVIRONMENT & RULES
-- **Map Layout**: The world consists of Land ('*') and a central River ('x').
-- **Objects**:
-  - **Apples ('a')**: Spawn on Land. Eating an apple gives **+1.0 reward**.
-  - **Dirt ('#')**: Spawns on Water (River). Cleaning dirt gives **+0.0 immediate reward**.
-  - **Agents ('1'..'9')**: You and other agents.
-- **The Ecosystem (Crucial)**:
-  - Apples auto-generate on land, BUT the spawn rate depends on the cleanliness of the river.
-  - If the river is full of dirt, **apples stop spawning entirely**.
-  - To maximize rewards, agents must balance cleaning the river (maintenance) and eating apples (harvesting).
-  - If everyone eats and no one cleans, the food source will die out.
+### THE WORLD
+- The world is a 2D grid. Coordinates (0,0) are at the Top-Left.
+- **Land ('*')**: Where apples spawn.
+- **River ('x')**: A vertical band of water where dirt accumulates.
 
-### AVAILABLE HIGH-LEVEL ACTIONS
-You do not control individual steps (up/down/left/right). Instead, you choose a high-level strategy, and the system handles the pathfinding.
+### THE OBJECTIVES
+1. **Eat Apples ('a')**: You get **+1.0 reward** for eating an apple.
+2. **Clean Dirt ('#')**: You get **+0.0 immediate reward** for cleaning dirt.
 
-1. **`smart_clean_step`**
-   - **Behavior**: Automatically scans the global map for the nearest Dirt ('#'). Navigates towards it and cleans it.
-   - **When to use**: Use this when you see dirt in the river, or when apples are scarce (indicating the river needs cleaning to trigger spawns).
+### THE MECHANIC (CRITICAL)
+- Apples spawn on Land.
+- Dirt accumulates in the River.
+- **Apple spawn rate depends on the River's cleanliness.**
+- If the river is full of dirt, **NO apples will spawn**.
+- To survive and get high scores, agents must sacrifice their time to clean the river, even though it gives no immediate points.
+- If you only eat and never clean, the ecosystem will collapse, and you will starve.
 
-2. **`smart_forage_step`**
-   - **Behavior**: Automatically scans the global map for the nearest Apple ('a'). Navigates towards it and eats it.
-   - **When to use**: Use this when apples are visible and available.
-
-3. **`random_walk`**
-   - **Behavior**: Takes a random step.
-   - **When to use**: Use this if you are stuck, or if there are absolutely no items on the map to search for.
-
-### YOUR GOAL
-Maximize your personal score (eating apples) while ensuring the ecosystem survives (cleaning dirt).
+### YOUR CAPABILITIES
+You cannot move diagonally. You have high-level functions to navigate and interact.
 """
 
-def create_thinking_prompt(obs_text: str, agent_id: int):
+def get_action_api() -> str:
     """
-    Creates the prompt for the first stage of reasoning (Chain of Thought).
+    Returns the documentation for the available high-level actions and JSON format.
+    """
+    return """
+### AVAILABLE ACTIONS
+You must respond with a JSON object calling one of these functions:
+
+1. **move_to(coord_x, coord_y)**
+   - Moves you towards the specified coordinate.
+   - Use this to get closer to a target.
+
+2. **clean_at(coord_x, coord_y)**
+   - Moves to the coordinate and cleans the dirt there.
+   - Use this when you decide to help the ecosystem.
+
+3. **eat_at(coord_x, coord_y)**
+   - Moves to the coordinate and eats the apple there.
+   - Use this to gain rewards.
+
+4. **random_explore()**
+   - Moves in a random direction.
+   - Use this if you see nothing of interest and have no target.
+
+### RESPONSE FORMAT
+You must output **ONLY** a valid JSON object. Do not add markdown formatting like json.
+Example:
+{
+    "action": "eat_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 5,
+        "coord_y": 3
+    }
+}
+"""
+
+def create_thinking_prompt(env: Any, agent_id: int) -> List[Dict[str, str]]:
+    """
+    Creates a prompt for the 'Thinking' stage. 
+    Injects global knowledge (nearest items) to help the agent reason.
     
     Args:
-        obs_text (str): The string representation of the agent's local 5x3 observation.
-        agent_id (int): The ID of the current agent.
+        env: The CleanupEnvMove instance.
+        agent_id: The agent's ID.
         
     Returns:
-        List[dict]: A list of messages for the LLM.
+        A list of chat messages.
     """
-    system_msg = get_system_prompt()
+    # 1. Get Natural Language Observation
+    obs_text = helpers.get_observation_description(env, agent_id)
     
-    user_msg = f"""You are Agent {agent_id}.
+    # 2. Get Global Strategic Info (The "GPS")
+    nearest_apple = helpers.find_nearest_apple(env, agent_id)
+    nearest_dirt = helpers.find_nearest_dirt(env, agent_id)
     
-Here is your local 5x3 visual observation of the grid (you are in the center):
+    strategy_info = []
+    if nearest_apple['found']:
+        strategy_info.append(f"- Nearest Apple: at ({nearest_apple['coord_x']}, {nearest_apple['coord_y']}), distance {nearest_apple['distance']}.")
+    else:
+        strategy_info.append("- Nearest Apple: None found.")
+        
+    if nearest_dirt['found']:
+        strategy_info.append(f"- Nearest Dirt: at ({nearest_dirt['coord_x']}, {nearest_dirt['coord_y']}), distance {nearest_dirt['distance']}.")
+    else:
+        strategy_info.append("- Nearest Dirt: None found.")
+        
+    strategy_str = "\n".join(strategy_info)
 
+    # 3. Construct Prompt
+    system_msg = get_system_context() + "\n\nYour task is to ANALYZE the situation. Do not output JSON yet. Simply reason about what you should do."
+    
+    user_content = f"""
+You are Agent {agent_id}.
+
+### CURRENT OBSERVATION
 {obs_text}
 
+### GLOBAL SCAN
+{strategy_str}
 
-**Task**: Analyze the situation.
-1. Identify what objects are visible in your vicinity (Dirt '#', Apples 'a', Water 'x', Land '*').
-2. Assess the state of the game. Is the river dirty? Are there apples ready to harvest?
-3. Decide which high-level strategy (`smart_clean_step` or `smart_forage_step`) is best right now.
-   - If you see Dirt, the ecosystem might need maintenance.
-   - If you see Apples, you can harvest.
-   - If you see nothing, consider what the team needs most.
+### DECISION REQUIRED
+Analyze the trade-off:
+1. Should you eat an apple for immediate reward?
+2. Should you clean dirt to ensure future apples spawn (helping the group)?
+3. If nothing is nearby, where should you explore?
 
-Provide your reasoning briefly.
+Provide your reasoning.
 """
     return [
         {"role": "system", "content": system_msg},
-        {"role": "user", "content": user_msg}
+        {"role": "user", "content": user_content}
     ]
 
-def create_single_stage_prompt(obs_text: str, thinking_response: str, agent_id: int):
+def create_single_stage_prompt(env: Any, thinking_response: str, agent_id: int) -> List[Dict[str, str]]:
     """
-    Creates the prompt for the final action selection.
+    Creates a prompt for the 'Action' stage.
+    Takes the previous reasoning and demands a JSON action.
     
     Args:
-        obs_text (str): The local observation string.
-        thinking_response (str): The output from the previous reasoning step.
-        agent_id (int): The ID of the current agent.
+        env: The CleanupEnvMove instance.
+        thinking_response: The output from the previous thinking step.
+        agent_id: The agent's ID.
         
     Returns:
-        List[dict]: A list of messages for the LLM.
+        A list of chat messages.
     """
-    system_msg = get_system_prompt()
+    # Re-generate context to ensure the prompt is self-contained if used in a stateless way,
+    # though typically this is appended to the chat history.
+    # Here we construct a "final" prompt to force the JSON.
     
-    # We include the previous turn's context to ensure consistency
-    user_msg_1 = f"You are Agent {agent_id}. Observation:\n{obs_text}\nAnalyze the situation."
-    assistant_msg_1 = thinking_response
+    system_msg = get_system_context() + "\n" + get_action_api()
     
-    user_msg_2 = """Based on your analysis, output ONLY the chosen action in valid JSON format.
-Do not output any other text.
+    # We reconstruct the user input briefly to remind the model of the context
+    obs_text = helpers.get_observation_description(env, agent_id)
+    
+    user_content = f"""
+You are Agent {agent_id}.
+Observation: {obs_text}
 
-The valid function names are:
-- "smart_clean_step"
-- "smart_forage_step"
-- "random_walk"
+Your Analysis:
+{thinking_response}
 
-**Output Format:**
-json
-{
-    "action": "smart_clean_step"
-}
-
+Based on your analysis, output the specific JSON action to execute now.
 """
-
     return [
         {"role": "system", "content": system_msg},
-        {"role": "user", "content": user_msg_1},
-        {"role": "assistant", "content": assistant_msg_1},
-        {"role": "user", "content": user_msg_2}
+        {"role": "user", "content": user_content}
     ]

@@ -3,22 +3,29 @@ import re
 from google import genai
 from google.genai import types
 
-def generate_and_save_helpers():
+api_key = os.getenv("VERTEX_AI_API_KEY")
+if not api_key:
+    print("Error: VERTEX_AI_API_KEY not found.")
+    exit(1)
+
+client = genai.Client(api_key=api_key, http_options={'api_version': 'v1beta'})
+
+chat = client.chats.create(
+    model='gemini-pro-latest',
+    config=types.GenerateContentConfig(
+        temperature=0.2,
+    )
+)
+
+def generate_and_save_helpers(env_file_pth):
     # 1. Setup Client
-    api_key = os.getenv("VERTEX_AI_API_KEY")
-    if not api_key:
-        print("Error: VERTEX_AI_API_KEY not found.")
-        return
-
-    client = genai.Client(api_key=api_key, http_options={'api_version': 'v1beta'})
-
     # 2. Read the environment file to give context to Gemini
     # We assume env_move.py is in the same directory
     try:
-        with open("env_move.py", "r") as f:
+        with open(env_file_pth, "r") as f:
             env_content = f.read()
     except FileNotFoundError:
-        print("Error: env_move.py not found. Please make sure it is in the same directory.")
+        print(f"Error: {env_file_pth} not found. Please make sure it is in the same directory.")
         return
 
     # 3. Construct the Prompt
@@ -26,17 +33,20 @@ def generate_and_save_helpers():
     prompt = f"""
     You are an expert Python developer.
     
-    Here is the source code for a game environment file named `env_move.py`:
+    Here is the source code for a game environment file named `{env_file_pth}`:
     ```python
     {env_content}
     ```
 
     YOUR TASK:
     1. Analyze the environment code.
-    2. Write a Python file named `helpers.py` containing high-level, callable functions to execute tasks (e.g., `move_to` to abstract the UP, DOWN, RIGHT, LEFT actions). You do not need to abstract every macro action, for example, fire you weapon could be a single function.
+    2. Based on the format of agents' observations: it could be like grid symbols, or (x,y). Write a function in helpers.py that transforms these observations to language descriptions, inidicate the agent's global coordinates, and describes the objects and their coordinates in the observation. For example, "You are at (2,3). You see an apple at (2,4) and a dirt at (1,3) and agent 2 at (3,3)."
+    3. Write a Python file named `helpers.py` containing high-level, callable functions to execute tasks (e.g., `move_to` to abstract the UP, DOWN, RIGHT, LEFT actions). You do not need to abstract every macro action, for example, fire you weapon could be a single function.
     Your function will be reused. Therefore, you should make it generic and reusable. Also, indicate in function return if this high-level task is done or not.
-    3. Write a Markdown file named `helper_readme.md` explaining how to use these helpers.
-
+    This is an example function definition: def move_to(env, agent_id: int, coord_x, coord_y) -> bool. Agents could use json in responses to call these functions: For example: {{'action': 'move_to',  'agent_id': 1, 'args': {{'coord_x': 5, 'coord_y': 3}}}}, {{'action': 'eat',  'agent_id': 1}}.
+    Each function should be as independent as possible, avoid calling another helper function inside a helper function and logic/movement overlapping. The purpose of these helpers is to be building blocks for the agent to call directly based on its observation and reasoning, not to call each other.
+    4. Write a Markdown file named `helper_readme.md` explaining how to use these helpers.
+    
     IMPORTANT OUTPUT FORMAT:
     You must wrap the content of each file in XML-style tags exactly like this:
 
@@ -52,14 +62,8 @@ def generate_and_save_helpers():
     print("Sending request to Gemini...")
 
     try:
-        # 4. Generate Content
-        response = client.models.generate_content(
-            model='gemini-pro-latest',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.2,  # Low temperature for more deterministic code
-            )
-        )
+        # 4. Generate Content via chat (history is managed automatically)
+        response = chat.send_message(prompt)
 
         # 5. Parse the Response using Regex
         # Look for pattern: <file name="filename"> content </file>
@@ -98,20 +102,14 @@ def generate_prompt_for_agents():
     smart_forage_step, move_to).
     """
     # 1. Setup Client
-    api_key = os.getenv("VERTEX_AI_API_KEY")
-    if not api_key:
-        print("Error: VERTEX_AI_API_KEY not found.")
-        return
 
-    client = genai.Client(api_key=api_key, http_options={'api_version': 'v1beta'})
-
-    # 2. Read context files
-    try:
-        with open("env_move.py", "r") as f:
-            env_content = f.read()
-    except FileNotFoundError:
-        print("Error: env_move.py not found.")
-        return
+    # # 2. Read context files
+    # try:
+    #     with open("env_move.py", "r") as f:
+    #         env_content = f.read()
+    # except FileNotFoundError:
+    #     print("Error: env_move.py not found.")
+    #     return
 
     try:
         with open("helpers.py", "r") as f:
@@ -131,12 +129,7 @@ def generate_prompt_for_agents():
     prompt = f"""
     You are an expert prompt engineer for LLM-based multi-agent reinforcement learning.
 
-    ENVIRONMENT SOURCE CODE:
-    Here is the full source code of the game environment `env_move.py`. Read it
-    carefully to understand the game rules, rewards, map layout, agent interactions,
-    and all mechanics:
-    ```python
-    {env_content}
+    You have seen the code of the game environment in env_move.py.
     ```
 
     HIGH-LEVEL HELPER FUNCTIONS:
@@ -181,14 +174,8 @@ def generate_prompt_for_agents():
     print("Sending request to Gemini for prompt template generation...")
 
     try:
-        # 4. Generate Content
-        response = client.models.generate_content(
-            model='gemini-pro-latest',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.2,
-            )
-        )
+        # 4. Generate Content via chat (history is managed automatically)
+        response = chat.send_message(prompt)
 
         # 5. Parse the Response
         pattern = r'<file name="(.*?)">\s*(.*?)\s*</file>'
@@ -215,6 +202,65 @@ def generate_prompt_for_agents():
         print(f"\nGeneration Failed!")
         print(f"Error details: {e}")
 
+def generate_agent_call_code(template_file_pth):
+    """Generate code based on the template and high-level helper functions."""
+    try:
+        with open(template_file_pth, "r") as f:
+            template_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: {template_file_pth} not found.")
+        return
+    prompt = f"""
+    You are an expert prompt engineer for LLM-based multi-agent reinforcement learning.
 
+    You have seen the code of the game environment in env_move.py and created high-level helper functions in helpers.py and prompts for agents in prompt_template.py.
+
+    YOUR TASK:
+    Based on the template here:
+    ```python
+    {template_content}
+    ```
+    and helper functions and prompts, fill the template.
+
+    IMPORTANT OUTPUT FORMAT:
+    Wrap the output in XML tags:
+
+    <file name="play.py">
+    [Put the python code here]
+    </file>
+    """
+
+    print("Sending request to Gemini for prompt template generation...")
+
+    try:
+        # 4. Generate Content via chat (history is managed automatically)
+        response = chat.send_message(prompt)
+
+        # 5. Parse the Response
+        pattern = r'<file name="(.*?)">\s*(.*?)\s*</file>'
+        matches = re.findall(pattern, response.text, flags=re.DOTALL)
+
+        if not matches:
+            print("Warning: Could not parse files from response. Raw output saved to 'gemini_prompt_raw_output.txt'")
+            with open("gemini_prompt_raw_output.txt", "w") as f:
+                f.write(response.text)
+            return
+
+        # 6. Save the files
+        print(f"\nFound {len(matches)} files in response.")
+        for filename, content in matches:
+            content = content.replace("```python", "").replace("```markdown", "").replace("```", "").strip()
+
+            with open(filename, "w") as f:
+                f.write(content)
+            print(f"Successfully saved: {filename}")
+
+        print("\nDone! Prompt template generated.")
+
+    except Exception as e:
+        print(f"\nGeneration Failed!")
+        print(f"Error details: {e}")
 if __name__ == "__main__":
+    generate_and_save_helpers("env_move.py")
     generate_prompt_for_agents()
+    generate_agent_call_code("test_qwen4b_template.py")
