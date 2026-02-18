@@ -28,7 +28,7 @@ Each training "group" consists of:
                    Loss = -E[min(ratio · A, clip(ratio, 1±ε) · A)]
                    where ratio = exp(log π_new − log π_old)
 
-Two-stage generation (optional):
+Two-stage generation:
   Stage 1 – Model produces free-form "thinking" text (N tokens).
   Stage 2 – Model reads its own thinking and outputs a single action word.
   The log-prob used for training can cover both stages ("action+thinking")
@@ -213,9 +213,10 @@ class YourGameGRPOTrainer:
         self.action_logits_processor = AllowOnlyActionWords(self.tokenizer, self.action_words)
 
         if is_main:
-            logger.info(f"Actions: {self.action_words}")
-            logger.info(f"Model  : {config.model_name}")
-            logger.info(f"Two-stage generation: {config.use_two_stage}")
+            logger.info(f"Actions        : {self.action_words}")
+            logger.info(f"Model          : {config.model_name}")
+            logger.info(f"Thinking tokens: {config.thinking_tokens}")
+            logger.info(f"Log-prob mode  : {config.logprob_mode}")
 
         # ------------------------------------------------------------------
         # MODEL LOADING  — GENERIC
@@ -446,28 +447,6 @@ class YourGameGRPOTrainer:
             messages, tokenize=False, add_generation_prompt=True
         )
 
-    def create_single_stage_prompt(self, obs_text: str, agent_id: int) -> str:
-        """
-        Build a single-stage prompt that directly asks for an action (no thinking).
-
-        Used when config.use_two_stage = False.
-        """
-        # === CUSTOMIZE ===
-        system_msg = (
-            "You are an agent playing [YOUR GAME NAME]. "
-            "Output ONLY ONE action word: "
-            + ", ".join(self.action_words)
-            + "."
-        )
-        # ==================
-        messages = [
-            {"role": "system", "content": system_msg},
-            {"role": "user",   "content": obs_text},
-        ]
-        return self.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
     # ======================================================================
     # === CUSTOMIZE ===
     # ACTION EXTRACTION
@@ -631,12 +610,12 @@ class YourGameGRPOTrainer:
         model,
     ) -> Tuple[str, torch.Tensor, str, str, str, Optional[torch.Tensor], Optional[torch.Tensor]]:
         """
-        Generate one action for one agent (sequential, not batched).
+        Generate one action for one agent using two-stage generation (sequential).
 
         Returns:
             action          : Chosen action string.
             log_prob        : Summed log-prob of the generated tokens (detached scalar tensor).
-            thinking_text   : Stage-1 reasoning text (empty if single-stage).
+            thinking_text   : Stage-1 reasoning text.
             full_response   : Combined "thinking → action_text".
             action_text     : Raw Stage-2 output text.
             action_input_ids: Token IDs of the Stage-2 prompt (for training).
@@ -647,129 +626,87 @@ class YourGameGRPOTrainer:
 
         obs_text = self.format_observation(raw_obs, agent_id, env)
 
-        if self.config.use_two_stage:
-            # ---- Stage 1: thinking ----------------------------------------
-            thinking_prompt = self.create_thinking_prompt(obs_text, agent_id)
-            t_inputs = self.tokenizer(
-                thinking_prompt, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=False,
-            ).to(target_device)
+        # ---- Stage 1: thinking --------------------------------------------
+        thinking_prompt = self.create_thinking_prompt(obs_text, agent_id)
+        t_inputs = self.tokenizer(
+            thinking_prompt, return_tensors="pt",
+            truncation=True, max_length=self.config.max_length, padding=False,
+        ).to(target_device)
 
-            try:
-                with torch.no_grad():
-                    t_outputs = gen_model.generate(
-                        **t_inputs,
-                        max_new_tokens=self.config.thinking_tokens,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Stage-1 generation failed: {e}")
-                return (self.action_words[0], torch.tensor(0.0, device=target_device),
-                        "", "", "", None, None)
+        try:
+            with torch.no_grad():
+                t_outputs = gen_model.generate(
+                    **t_inputs,
+                    max_new_tokens=self.config.thinking_tokens,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p, top_k=self.config.top_k,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    return_dict_in_generate=True,
+                )
+        except RuntimeError as e:
+            logger.warning(f"Stage-1 generation failed: {e}")
+            return (self.action_words[0], torch.tensor(0.0, device=target_device),
+                    "", "", "", None, None)
 
-            thinking_ids = t_outputs.sequences[0][t_inputs.input_ids.shape[1]:]
-            thinking_text = self.tokenizer.decode(thinking_ids, skip_special_tokens=True)
+        thinking_ids = t_outputs.sequences[0][t_inputs.input_ids.shape[1]:]
+        thinking_text = self.tokenizer.decode(thinking_ids, skip_special_tokens=True)
 
-            # ---- Stage 2: action ------------------------------------------
-            action_prompt = self.create_action_prompt(obs_text, thinking_text)
-            a_inputs = self.tokenizer(
-                action_prompt, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=False,
-            ).to(target_device)
+        # ---- Stage 2: action ----------------------------------------------
+        action_prompt = self.create_action_prompt(obs_text, thinking_text)
+        a_inputs = self.tokenizer(
+            action_prompt, return_tensors="pt",
+            truncation=True, max_length=self.config.max_length, padding=False,
+        ).to(target_device)
 
-            try:
-                with torch.no_grad():
-                    a_outputs = gen_model.generate(
-                        **a_inputs,
-                        max_new_tokens=10,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Stage-2 generation failed: {e}")
-                return (self.action_words[0], torch.tensor(0.0, device=target_device),
-                        thinking_text, thinking_text, "", None, None)
+        try:
+            with torch.no_grad():
+                a_outputs = gen_model.generate(
+                    **a_inputs,
+                    max_new_tokens=10,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p, top_k=self.config.top_k,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    return_dict_in_generate=True,
+                )
+        except RuntimeError as e:
+            logger.warning(f"Stage-2 generation failed: {e}")
+            return (self.action_words[0], torch.tensor(0.0, device=target_device),
+                    thinking_text, thinking_text, "", None, None)
 
-            action_ids = a_outputs.sequences[0][a_inputs.input_ids.shape[1]:]
-            action_text = self.tokenizer.decode(action_ids, skip_special_tokens=True)
-            action = self.get_action_from_response(action_text)
+        action_ids = a_outputs.sequences[0][a_inputs.input_ids.shape[1]:]
+        action_text = self.tokenizer.decode(action_ids, skip_special_tokens=True)
+        action = self.get_action_from_response(action_text)
 
-            # ---- Log-prob -------------------------------------------------
-            try:
-                lp_model = self.old_model if self.old_model is not None else gen_model
+        # ---- Log-prob -----------------------------------------------------
+        try:
+            lp_model = self.old_model if self.old_model is not None else gen_model
 
-                if self.config.logprob_mode == "action+thinking":
-                    t_lp = self.compute_batch_sequence_log_prob(
-                        lp_model, [t_inputs.input_ids], [thinking_ids],
-                        target_device, self.tokenizer.pad_token_id, need_grad=False,
-                    )[0]
-                    a_lp = self.compute_batch_sequence_log_prob(
-                        lp_model, [a_inputs.input_ids], [action_ids],
-                        target_device, self.tokenizer.pad_token_id, need_grad=False,
-                    )[0]
-                    log_prob = t_lp + a_lp
-                else:
-                    log_prob = self.compute_batch_sequence_log_prob(
-                        lp_model, [a_inputs.input_ids], [action_ids],
-                        target_device, self.tokenizer.pad_token_id, need_grad=False,
-                    )[0]
-            except Exception as e:
-                logger.warning(f"Log-prob computation failed: {e}")
-                log_prob = torch.tensor(-10.0, device=target_device)
-
-            return (action, log_prob, thinking_text,
-                    f"{thinking_text} -> {action_text}", action_text,
-                    a_inputs.input_ids, action_ids)
-
-        else:
-            # ---- Single-stage ---------------------------------------------
-            prompt = self.create_single_stage_prompt(obs_text, agent_id)
-            inputs = self.tokenizer(
-                prompt, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=False,
-            ).to(target_device)
-
-            try:
-                with torch.no_grad():
-                    outputs = gen_model.generate(
-                        **inputs,
-                        max_new_tokens=10,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Generation failed: {e}")
-                return (self.action_words[0], torch.tensor(0.0, device=target_device),
-                        "", "", "", None, None)
-
-            gen_ids = outputs.sequences[0][inputs.input_ids.shape[1]:]
-            response = self.tokenizer.decode(gen_ids, skip_special_tokens=True)
-            action = self.get_action_from_response(response)
-
-            try:
-                lp_model = self.old_model if self.old_model is not None else gen_model
-                log_prob = self.compute_batch_sequence_log_prob(
-                    lp_model, [inputs.input_ids], [gen_ids],
+            if self.config.logprob_mode == "action+thinking":
+                t_lp = self.compute_batch_sequence_log_prob(
+                    lp_model, [t_inputs.input_ids], [thinking_ids],
                     target_device, self.tokenizer.pad_token_id, need_grad=False,
                 )[0]
-            except Exception as e:
-                logger.warning(f"Log-prob computation failed: {e}")
-                log_prob = torch.tensor(-10.0, device=target_device)
+                a_lp = self.compute_batch_sequence_log_prob(
+                    lp_model, [a_inputs.input_ids], [action_ids],
+                    target_device, self.tokenizer.pad_token_id, need_grad=False,
+                )[0]
+                log_prob = t_lp + a_lp
+            else:
+                log_prob = self.compute_batch_sequence_log_prob(
+                    lp_model, [a_inputs.input_ids], [action_ids],
+                    target_device, self.tokenizer.pad_token_id, need_grad=False,
+                )[0]
+        except Exception as e:
+            logger.warning(f"Log-prob computation failed: {e}")
+            log_prob = torch.tensor(-10.0, device=target_device)
 
-            return action, log_prob, "", response, response, inputs.input_ids, gen_ids
+        return (action, log_prob, thinking_text,
+                f"{thinking_text} -> {action_text}", action_text,
+                a_inputs.input_ids, action_ids)
 
     def generate_actions_batch(
         self,
@@ -793,152 +730,97 @@ class YourGameGRPOTrainer:
         agent_ids = sorted(obs_dict.keys())
         n = len(agent_ids)
 
-        if self.config.use_two_stage:
-            # ---- Stage 1 batch --------------------------------------------
-            obs_texts, thinking_prompts = [], []
-            for aid in agent_ids:
-                obs_text = self.format_observation(obs_dict[aid], aid, env)
-                obs_texts.append(obs_text)
-                thinking_prompts.append(self.create_thinking_prompt(obs_text, aid))
+        # ---- Stage 1 batch ------------------------------------------------
+        obs_texts, thinking_prompts = [], []
+        for aid in agent_ids:
+            obs_text = self.format_observation(obs_dict[aid], aid, env)
+            obs_texts.append(obs_text)
+            thinking_prompts.append(self.create_thinking_prompt(obs_text, aid))
 
-            t_inputs = self.tokenizer(
-                thinking_prompts, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=True,
-            ).to(target_device)
+        t_inputs = self.tokenizer(
+            thinking_prompts, return_tensors="pt",
+            truncation=True, max_length=self.config.max_length, padding=True,
+        ).to(target_device)
 
-            try:
-                with torch.no_grad():
-                    t_outputs = gen_model.generate(
-                        **t_inputs,
-                        max_new_tokens=self.config.thinking_tokens,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Batch Stage-1 failed: {e}, falling back to sequential")
-                return self._sequential_fallback(obs_dict, step, env, model)
-
-            thinking_texts = [
-                self.tokenizer.decode(
-                    t_outputs.sequences[i][t_inputs.input_ids[i].shape[0]:],
-                    skip_special_tokens=True,
+        try:
+            with torch.no_grad():
+                t_outputs = gen_model.generate(
+                    **t_inputs,
+                    max_new_tokens=self.config.thinking_tokens,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p, top_k=self.config.top_k,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    return_dict_in_generate=True,
                 )
-                for i in range(n)
-            ]
+        except RuntimeError as e:
+            logger.warning(f"Batch Stage-1 failed: {e}, falling back to sequential")
+            return self._sequential_fallback(obs_dict, step, env, model)
 
-            # ---- Stage 2 batch --------------------------------------------
-            action_prompts = [
-                self.create_action_prompt(obs_texts[i], thinking_texts[i])
-                for i in range(n)
-            ]
-            a_inputs = self.tokenizer(
-                action_prompts, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=True,
-            ).to(target_device)
+        thinking_texts = [
+            self.tokenizer.decode(
+                t_outputs.sequences[i][t_inputs.input_ids[i].shape[0]:],
+                skip_special_tokens=True,
+            )
+            for i in range(n)
+        ]
 
-            try:
-                with torch.no_grad():
-                    a_outputs = gen_model.generate(
-                        **a_inputs,
-                        max_new_tokens=10,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Batch Stage-2 failed: {e}, falling back to sequential")
-                return self._sequential_fallback(obs_dict, step, env, model)
+        # ---- Stage 2 batch ------------------------------------------------
+        action_prompts = [
+            self.create_action_prompt(obs_texts[i], thinking_texts[i])
+            for i in range(n)
+        ]
+        a_inputs = self.tokenizer(
+            action_prompts, return_tensors="pt",
+            truncation=True, max_length=self.config.max_length, padding=True,
+        ).to(target_device)
 
-            actions, action_texts, action_ids_list, action_input_ids_list = [], [], [], []
-            for i in range(n):
-                a_ids = a_outputs.sequences[i][a_inputs.input_ids[i].shape[0]:]
-                a_text = self.tokenizer.decode(a_ids, skip_special_tokens=True)
-                actions.append(self.get_action_from_response(a_text))
-                action_texts.append(a_text)
-                action_ids_list.append(a_ids)
-                action_input_ids_list.append(a_inputs.input_ids[i])
-
-            # ---- Log-probs batch ------------------------------------------
-            try:
-                lp_model = self.old_model if self.old_model is not None else gen_model
-                log_probs = self.compute_batch_sequence_log_prob(
-                    lp_model, action_input_ids_list, action_ids_list,
-                    target_device, self.tokenizer.pad_token_id, need_grad=False,
+        try:
+            with torch.no_grad():
+                a_outputs = gen_model.generate(
+                    **a_inputs,
+                    max_new_tokens=10,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p, top_k=self.config.top_k,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    return_dict_in_generate=True,
                 )
-            except Exception as e:
-                logger.warning(f"Batch log-prob failed: {e}")
-                log_probs = [torch.tensor(-10.0, device=target_device)] * n
+        except RuntimeError as e:
+            logger.warning(f"Batch Stage-2 failed: {e}, falling back to sequential")
+            return self._sequential_fallback(obs_dict, step, env, model)
 
-            results = {}
-            for i, aid in enumerate(agent_ids):
-                results[aid] = (
-                    actions[i], log_probs[i], thinking_texts[i],
-                    f"{thinking_texts[i]} -> {action_texts[i]}",
-                    action_texts[i], action_prompts[i],
-                    action_input_ids_list[i], action_ids_list[i],
-                )
-            return results
+        actions, action_texts, action_ids_list, action_input_ids_list = [], [], [], []
+        for i in range(n):
+            a_ids = a_outputs.sequences[i][a_inputs.input_ids[i].shape[0]:]
+            a_text = self.tokenizer.decode(a_ids, skip_special_tokens=True)
+            actions.append(self.get_action_from_response(a_text))
+            action_texts.append(a_text)
+            action_ids_list.append(a_ids)
+            action_input_ids_list.append(a_inputs.input_ids[i])
 
-        else:
-            # ---- Single-stage batch ---------------------------------------
-            prompts = [
-                self.create_single_stage_prompt(
-                    self.format_observation(obs_dict[aid], aid, env), aid
-                )
-                for aid in agent_ids
-            ]
-            inputs = self.tokenizer(
-                prompts, return_tensors="pt",
-                truncation=True, max_length=self.config.max_length, padding=True,
-            ).to(target_device)
+        # ---- Log-probs batch ----------------------------------------------
+        try:
+            lp_model = self.old_model if self.old_model is not None else gen_model
+            log_probs = self.compute_batch_sequence_log_prob(
+                lp_model, action_input_ids_list, action_ids_list,
+                target_device, self.tokenizer.pad_token_id, need_grad=False,
+            )
+        except Exception as e:
+            logger.warning(f"Batch log-prob failed: {e}")
+            log_probs = [torch.tensor(-10.0, device=target_device)] * n
 
-            try:
-                with torch.no_grad():
-                    outputs = gen_model.generate(
-                        **inputs,
-                        max_new_tokens=10,
-                        temperature=self.config.temperature,
-                        top_p=self.config.top_p, top_k=self.config.top_k,
-                        do_sample=True,
-                        pad_token_id=self.tokenizer.pad_token_id,
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                    )
-            except RuntimeError as e:
-                logger.warning(f"Batch generation failed: {e}, falling back to sequential")
-                return self._sequential_fallback(obs_dict, step, env, model)
-
-            responses, actions, gen_ids_list, inp_ids_list = [], [], [], []
-            for i in range(n):
-                g_ids = outputs.sequences[i][inputs.input_ids[i].shape[0]:]
-                resp = self.tokenizer.decode(g_ids, skip_special_tokens=True)
-                responses.append(resp)
-                actions.append(self.get_action_from_response(resp))
-                gen_ids_list.append(g_ids)
-                inp_ids_list.append(inputs.input_ids[i])
-
-            try:
-                lp_model = self.old_model if self.old_model is not None else gen_model
-                log_probs = self.compute_batch_sequence_log_prob(
-                    lp_model, inp_ids_list, gen_ids_list,
-                    target_device, self.tokenizer.pad_token_id, need_grad=False,
-                )
-            except Exception as e:
-                logger.warning(f"Batch log-prob failed: {e}")
-                log_probs = [torch.tensor(-10.0, device=target_device)] * n
-
-            return {
-                aid: (actions[i], log_probs[i], "", responses[i], responses[i],
-                      "", inp_ids_list[i], gen_ids_list[i])
-                for i, aid in enumerate(agent_ids)
-            }
+        results = {}
+        for i, aid in enumerate(agent_ids):
+            results[aid] = (
+                actions[i], log_probs[i], thinking_texts[i],
+                f"{thinking_texts[i]} -> {action_texts[i]}",
+                action_texts[i], action_prompts[i],
+                action_input_ids_list[i], action_ids_list[i],
+            )
+        return results
 
     def _sequential_fallback(self, obs_dict, step, env, model):
         """Fallback: generate actions one agent at a time."""

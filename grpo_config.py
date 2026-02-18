@@ -25,9 +25,9 @@ class GRPOConfig:
 
     # -------------------------------------------------------------------------
     # GENERATION (two-stage: thinking → action)
-    # Set use_two_stage=False for single-stage (direct action output).
+    # Stage 1: model produces free-form reasoning (thinking_tokens tokens).
+    # Stage 2: model reads its reasoning and outputs a single action word.
     # -------------------------------------------------------------------------
-    use_two_stage: bool = True
     # Number of tokens the model is allowed to "think" before producing an action
     thinking_tokens: int = 64
     # Which tokens count toward the GRPO log-prob:
