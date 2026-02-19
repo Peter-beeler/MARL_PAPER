@@ -202,7 +202,7 @@ def generate_prompt_for_agents():
         print(f"\nGeneration Failed!")
         print(f"Error details: {e}")
 
-def generate_agent_call_code(template_file_pth):
+def generate_play_code(template_file_pth):
     """Generate code based on the template and high-level helper functions."""
     try:
         with open(template_file_pth, "r") as f:
@@ -260,7 +260,155 @@ def generate_agent_call_code(template_file_pth):
     except Exception as e:
         print(f"\nGeneration Failed!")
         print(f"Error details: {e}")
+
+def generate_training_loop_code(template_file_pth):
+    """Generate code for the training loop based on the environment and helper functions."""
+    # Similar structure to the previous function, but with a different prompt
+    """Generate code based on the template and high-level helper functions."""
+    try:
+        with open(template_file_pth, "r") as f:
+            template_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: {template_file_pth} not found.")
+        return
+    try:
+        with open("env_move.py", "r") as f:
+            env_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: env_move.py not found.")
+        return
+    try:
+        with open("helpers.py", "r") as f:
+            helpers_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: helpers.py not found.")
+        return
+    try:
+        with open("prompt_template.py", "r") as f:
+            prompt_template_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: prompt_template.py not found.")
+        return
+    try:
+        with open("grpo_config.py", "r") as f:
+            grpo_config_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: grpo_config.py not found.")
+        return
+    prompt = f"""
+    You are an expert prompt engineer for LLM-based multi-agent reinforcement learning.
+
+    Here is the game/environment code called env_move.py:
+    ```python
+    {env_content}
+    ```
+    Here is the high-level action functions(helpers) code, helpers.py:
+    ```python
+    {helpers_content}
+    ```
+    Here is the prompt template code for agents, prompt_template.py:
+    ```python
+    {prompt_template_content}
+    ```
+    You have seen the code of the game environment high-level helper functions and prompts for agents.
+
+    YOUR TASK:
+    Based on the template here:
+    ```python
+    {template_content}
+    ```
+    and helper functions and prompts, fill the template. The code should implement a training loop where using GRPO algorithm to finetune agents(small llms) to improve the rewards.
+    Replace/rewrite the functions in the template if needed, and make sure to use the high-level helper functions in the training loop for agents to interact with the environment. You can also use the functions in prompt templates to keep the same foramt. Make sure the code is compatible with the accelerate for multi-gpu training.
+    The config is in the grpo_config.py and also update the imports in the template.
+    ```python
+    {grpo_config_content}
+    ```
+    And you should use the config parameters defined in grpo_config.py in your training loop implementation.
+    IMPORTANT OUTPUT FORMAT:
+    Wrap the output in XML tags:
+
+    <file name="train.py">
+    [Put the python code here]
+    </file>
+    """
+
+    print("Sending request to Gemini for prompt template generation...")
+
+    try:
+        # 4. Generate Content via chat (history is managed automatically)
+        response = chat.send_message(prompt)
+
+        # 5. Parse the Response
+        pattern = r'<file name="(.*?)">\s*(.*?)\s*</file>'
+        matches = re.findall(pattern, response.text, flags=re.DOTALL)
+
+        if not matches:
+            print("Warning: Could not parse files from response. Raw output saved to 'gemini_prompt_raw_output.txt'")
+            with open("gemini_prompt_raw_output.txt", "w") as f:
+                f.write(response.text)
+            return
+
+        # 6. Save the files
+        print(f"\nFound {len(matches)} files in response.")
+        for filename, content in matches:
+            content = content.replace("```python", "").replace("```markdown", "").replace("```", "").strip()
+
+            with open(filename, "w") as f:
+                f.write(content)
+            print(f"Successfully saved: {filename}")
+
+        print("\nDone! Prompt template generated.")
+
+    except Exception as e:
+        print(f"\nGeneration Failed!")
+        print(f"Error details: {e}")
+
+def generate_launch_script():
+    """Generate lauch script for training."""
+    prompt = f"""
+    You are an expert prompt engineer for LLM-based multi-agent reinforcement learning.
+    You have created the training loop in train.py using the environment, helper functions, and prompt templates.
+    Now generate a slurm job script named `launch_training.sh` that uses the accelerate library to launch the training on 1 GPU.
+
+    <file name="launch_training.sh">
+    [Put the bash script code here]
+    </file>
+    """
+
+    print("Sending request to Gemini for prompt template generation...")
+
+    try:
+        # 4. Generate Content via chat (history is managed automatically)
+        response = chat.send_message(prompt)
+
+        # 5. Parse the Response
+        pattern = r'<file name="(.*?)">\s*(.*?)\s*</file>'
+        matches = re.findall(pattern, response.text, flags=re.DOTALL)
+
+        if not matches:
+            print("Warning: Could not parse files from response. Raw output saved to 'gemini_prompt_raw_output.txt'")
+            with open("gemini_prompt_raw_output.txt", "w") as f:
+                f.write(response.text)
+            return
+
+        # 6. Save the files
+        print(f"\nFound {len(matches)} files in response.")
+        for filename, content in matches:
+            content = content.replace("```python", "").replace("```markdown", "").replace("```", "").strip()
+
+            with open(filename, "w") as f:
+                f.write(content)
+            print(f"Successfully saved: {filename}")
+
+        print("\nDone! Prompt template generated.")
+
+    except Exception as e:
+        print(f"\nGeneration Failed!")
+        print(f"Error details: {e}")
 if __name__ == "__main__":
-    generate_and_save_helpers("env_move.py")
-    generate_prompt_for_agents()
-    generate_agent_call_code("test_qwen4b_template.py")
+    # generate_and_save_helpers("env_move.py")
+    # generate_prompt_for_agents()
+    # generate_play_code("test_qwen4b_template.py")
+    generate_training_loop_code("grpo_template.py")
+    generate_launch_script()
+    

@@ -124,7 +124,6 @@ Provide your reasoning.
         {"role": "user", "content": user_content}
     ]
 
-def create_single_stage_prompt(env: Any, thinking_response: str, agent_id: int) -> List[Dict[str, str]]:
     """
     Creates a prompt for the 'Action' stage.
     Takes the previous reasoning and demands a JSON action.

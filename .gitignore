@@ -8,3 +8,6 @@ gemini_prompt_raw_output.txt
 *.log
 *.env
 .env*
+wandb/
+checkpoints/
+**/grpo_checkpoints/

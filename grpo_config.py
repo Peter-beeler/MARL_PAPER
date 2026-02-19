@@ -21,7 +21,7 @@ class GRPOConfig:
     # -------------------------------------------------------------------------
     model_name: str = "Qwen/Qwen2.5-0.5B"
     # Max token length for prompt + response (prompt is left-truncated if needed)
-    max_length: int = 512
+    max_length: int = 1024
 
     # -------------------------------------------------------------------------
     # GENERATION (two-stage: thinking → action)
@@ -29,7 +29,7 @@ class GRPOConfig:
     # Stage 2: model reads its reasoning and outputs a single action word.
     # -------------------------------------------------------------------------
     # Number of tokens the model is allowed to "think" before producing an action
-    thinking_tokens: int = 64
+    thinking_tokens: int = 256
     # Which tokens count toward the GRPO log-prob:
     #   "action"          → only the action token(s)
     #   "action+thinking" → both thinking and action tokens
@@ -99,13 +99,13 @@ class GRPOConfig:
     minibatch_size: int = 2
     # Samples packed into each GPU forward pass for gradient accumulation.
     # Lower = less VRAM; higher = faster.
-    samples_per_micro_batch: int = 2
+    samples_per_micro_batch: int = 1
 
     # -------------------------------------------------------------------------
     # ENVIRONMENT
     # -------------------------------------------------------------------------
     # Maximum steps per episode before forced termination
-    max_env_steps: int = 50
+    max_env_steps: int = 5
     # Seed for reproducibility (environment resets, model init, etc.)
     seed: int = 42
 
