@@ -20,7 +20,7 @@ GRPO-based multi-agent reinforcement learning training. An LLM plays a game (`en
 
 ## Generation Pipeline (4 Steps, in order)
 
-### Step 0: Generate `helpers.py` + `helper_readme.md`
+### Step 0: Create folder
 Create a new folder to store any new files called `generated`
 
 ### Step 1: Generate `helpers.py` + `helper_readme.md`
@@ -84,8 +84,7 @@ Run `launch_training.sh` and config training episode to a small number like 10 a
 
 ## Iteration Workflow (after debug)
 
-Set configs for train.py via `grpo_config.py` or cmd parameters(if available) in `launch_training.sh` which you think is suitbale for current gpus and a formal training.
-Run `launch_training.sh` and monitor the console and `train.logs` and `Sample_EP.logs`. Then, do 2 things: 1) If you see some serious issues in `train.logs`, stop the training and search for a solution then modify files and restart. 2) `Sample_EP.logs` contains agents' inputs and outputs, also environment state transitions. Fix small issues like max_new_tokens is not enough for generation. Then go through it and think about high-level ideas about improvements. For example, multiple agents are targetting the same object during game, one of possible solutions is to 
+Set configs for train.py via `grpo_config.py` or cmd parameters(if available) in `launch_training.sh` which you think is suitbale for current gpus and a formal training. Use model `Qwen/Qwen3-4B-Instruct-2507`. Run `launch_training.sh` and monitor the console and `train.logs` and `Sample_EP.logs`. Then, do 2 things: 1) If you see some serious issues in `train.logs`, stop the training and search for a solution then modify files and restart. 2) `Sample_EP.logs` contains agents' inputs and outputs, also environment state transitions. Fix small issues like max_new_tokens is not enough for generation. Then go through it and think about high-level ideas about improvements. For example, multiple agents are targetting the same object during game, one of possible solutions is to divide all agents into 2 different job grounds via prompting. Put all ideas into `future_improvements.md` and DO NOT APPLY now.
 
 ## Rules
 

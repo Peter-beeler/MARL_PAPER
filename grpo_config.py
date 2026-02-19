@@ -19,7 +19,7 @@ class GRPOConfig:
     # -------------------------------------------------------------------------
     # MODEL
     # -------------------------------------------------------------------------
-    model_name: str = "Qwen/Qwen2.5-0.5B"
+    model_name: str = "Qwen/Qwen2.5-1.5B"
     # Max token length for prompt + response (prompt is left-truncated if needed)
     max_length: int = 1024
 
@@ -29,7 +29,7 @@ class GRPOConfig:
     # Stage 2: model reads its reasoning and outputs a single action word.
     # -------------------------------------------------------------------------
     # Number of tokens the model is allowed to "think" before producing an action
-    thinking_tokens: int = 256
+    thinking_tokens: int = 384
     # Which tokens count toward the GRPO log-prob:
     #   "action"          → only the action token(s)
     #   "action+thinking" → both thinking and action tokens
@@ -59,7 +59,7 @@ class GRPOConfig:
     # TRAINING LOOP
     # -------------------------------------------------------------------------
     # Total number of environment episodes to run during training
-    num_episodes: int = 500
+    num_episodes: int = 1000
 
     # Single-GPU: how many episodes to collect per update group
     episodes_per_update: int = 8
@@ -68,7 +68,7 @@ class GRPOConfig:
     episodes_per_gpu: int = 4
 
     # Number of agents in the environment
-    num_agents: int = 1
+    num_agents: int = 3
 
     learning_rate: float = 1e-5
     warmup_steps: int = 20
@@ -105,7 +105,7 @@ class GRPOConfig:
     # ENVIRONMENT
     # -------------------------------------------------------------------------
     # Maximum steps per episode before forced termination
-    max_env_steps: int = 5
+    max_env_steps: int = 30
     # Seed for reproducibility (environment resets, model init, etc.)
     seed: int = 42
 
@@ -118,9 +118,9 @@ class GRPOConfig:
     # Print a training summary every N groups
     log_interval: int = 5
     # Run evaluation every N episodes (0 = disabled)
-    eval_interval: int = 128
+    eval_interval: int = 100
     # Number of episodes used during each evaluation pass
-    num_eval_episodes: int = 20
+    num_eval_episodes: int = 10
 
     # Log one sampled episode trajectory to a text file per group (useful for debugging)
     log_trajectory: bool = True
@@ -135,7 +135,7 @@ class GRPOConfig:
     # -------------------------------------------------------------------------
     # MULTI-GPU (Accelerate)
     # -------------------------------------------------------------------------
-    use_accelerate: bool = False
+    use_accelerate: bool = True
     mixed_precision: str = "bf16"  # "no", "fp16", or "bf16"
 
     # -------------------------------------------------------------------------
