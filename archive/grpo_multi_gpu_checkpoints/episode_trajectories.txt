@@ -1,0 +1,1050 @@
+
+================================================================================
+GROUP 0 | EPISODE 0
+Total Reward: 0.00 | Steps: 5
+Final Scores: {1: 0.0}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: At (5,5), you are not on any dirt. Dirt is at (7,6) and (7,4). To clean dirt, you must be on the same cell as the dirt. Currently, you are at (5,5), so you can't clean either dirt cell directly.
+
+Apples only spawn on land when the river is clean — meaning dirt must be cleaned. Since you are not adja...
+    Action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: At (6,5), you are not on any dirt. The dirt is at (7,6), (8,5), (7,4).  
+
+To spawn apples, the river must be clean — meaning there must be no dirt. So, to enable apple spawning, you need to clean the dirt cells.  
+
+You can only clean dirt if you are on the same cell. So:
+
+- You are at (6,5).  
+- The...
+    Action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: At (7,5), you can see dirt at (7,6), (8,5), and (7,4).  
+
+To spawn apples, the river must be clean — meaning dirt must be removed. Apples only appear on land when the river is clean, but cleaning dirt gives no points — only enabling apple spawning.  
+
+Currently, you are at (7,5), which is **not** a ...
+    Action: up
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: At (7,6):  
+- There is dirt at (7,6) and (8,5).  
+- You are on (7,6), which has dirt.  
+
+Action options:  
+- **clean**: You can clean the dirt at (7,6). This removes dirt from your cell, which helps make the river cleaner (enabling future apple spawning).  
+- **eat**: Cannot eat an apple here — no a...
+    Action: clean
+    Reward: 0.00
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: You are at (7,6). Dirt is at (8,5).  
+
+To clean the dirt, you must be on the same cell as the dirt. You are not currently on (8,5).  
+
+So:  
+- You cannot clean dirt right now.  
+- You cannot eat an apple because there's no apple (apples only spawn when the river is clean, and dirt is not cleaned yet...
+    Action: right
+    Reward: 0.00
+
+
+[Episode Summary]
+  Total Reward: 0.00
+  Rollout Time: 101.84s
+
+
+================================================================================
+GROUP 1 | EPISODE 0
+Total Reward: 0.00 | Steps: 5
+Final Scores: {1: 0.0}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: At (5,5), you are not on any dirt. Dirt is at (7,6) and (7,4). To clean dirt, you must move to a cell with dirt and then use "clean". Since apples only spawn on land when the river is clean (i.e., when dirt is cleaned), cleaning dirt enables apple spawning, but cleaning itself gives 0 points.
+
+Curre...
+    Action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: At (6,5), you are not on any dirt.  
+Dirt is at (7,6), (8,5), (7,4) — all of which are not adjacent to (6,5).  
+
+To eat apples, the river must be clean (i.e., no dirt), but currently there is dirt present, so **no apples are spawning**.  
+
+You need to **clean dirt** to remove it and eventually enabl...
+    Action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: At (7,5), you can see dirt at (7,6), (8,5), and (7,4). Since apples only spawn on land when the river is clean (i.e., when there's no dirt), and cleaning dirt gives no points but is necessary to enable apple spawning, we must first clean dirt to make land viable for apples.
+
+Current position: (7,5) ...
+    Action: up
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: At (7,6), you are on a cell with dirt. You can:
+
+- **Clean** the dirt at (7,6) → this will remove the dirt from that cell, but gives 0 points.
+- **Eat** an apple → only possible if there's an apple, but currently, no apple is mentioned, and apples only spawn when the river is clean (i.e., when dirt ...
+    Action: clean
+    Reward: 0.00
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: You are at (7,6). Dirt is at (8,5).  
+
+To clean the dirt, you must be on the same cell as the dirt. You are not currently on (8,5), so you need to move there first.  
+
+Best action: **right** to (8,6), then **down** to (8,5) to clean.  
+
+After cleaning, apples may spawn on land (since river is now cl...
+    Action: right
+    Reward: 0.00
+
+
+[Episode Summary]
+  Total Reward: 0.00
+  Rollout Time: 104.31s
+
+
+================================================================================
+GROUP 2 | EPISODE 0
+Total Reward: 0.00 | Steps: 5
+Final Scores: {1: 0.0}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: At (5,5), you are not on any dirt, and there are no apples currently spawning since the river is not clean (dirt is present at (7,6) and (7,4)). To enable apples to spawn, you must clean the dirt.
+
+But note: cleaning dirt gives **no points**, only enables apple spawning. So, you must first **clean**...
+    Action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: At (6,5), you are not on any dirt. The dirt is at (7,6), (8,5), (7,4) — all outside your current position.
+
+To get apples, the river must be clean (i.e., no dirt). Since dirt is present, apples won't spawn yet. But cleaning dirt gives no points — only eating apples does.
+
+You can only clean dirt **i...
+    Action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: You are at (7,5).  
+Dirt is at (7,6), (8,5), (7,4).  
+
+Apples only spawn on land when the river is clean — meaning, dirt must be cleaned to enable apple spawning.  
+Cleaning dirt gives no points, but is necessary.  
+You can only act on your current cell or adjacent cells.  
+
+Current situation:  
+- Y...
+    Action: right
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: x#x**
+xx1**
+x#x**
+    Thinking: You are at (8,5).  
+Dirt is at (7,6), (8,5), and (7,4).
+
+Since you can only clean or eat what is directly at your position, and you are at (8,5), you can **clean the dirt at (8,5)**.
+
+- Cleaning dirt gives no points, but it's necessary to potentially enable apples to spawn later.
+- Apples only spawn...
+    Action: clean
+    Reward: 0.00
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: x#x**
+xx1**
+x#x**
+    Thinking: At (8,5), you are not on any dirt.  
+Dirt is at (7,6) and (7,4) — both are not adjacent to your current position.  
+
+To clean dirt, you must be on the same cell as the dirt.  
+Currently, you are at (8,5), so you cannot clean (7,6) or (7,4) directly.  
+
+You can move to get closer, but cleaning gives ...
+    Action: left
+    Reward: 0.00
+
+
+[Episode Summary]
+  Total Reward: 0.00
+  Rollout Time: 110.76s
+
+
+================================================================================
+GROUP 0 | EPISODE 0
+Total Reward: 0.00 | Steps: 5
+Final Scores: {1: 0.0}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: Right now, there are no apples visible in the global scan — the nearest apple is not found. The only dirt locations are at (7, 2) and (7, 4), both of which are currently blocking apple spawning. Apples only spawn when the river is clean, meaning that removing dirt is a prerequisite for future apple ...
+    JSON action: 1: Clean one of the dirt spots.
+→ This improves the ecosystem and allows future apple spawning.
+
+Option 2: Randomly explore.
+→ No clear benefit without knowing more about the map.
+
+Since there's no ap
+    Low-level action: up
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: ***xx
+**1x#
+***xx
+    Thinking: Currently, there are no apples visible in the global scan, and the nearest dirt is at (7, 2), which is only 2 steps away. Apples only spawn on land when the river is clean — meaning that cleaning dirt is a prerequisite for apple generation. Since no apples are currently available, eating one would n...
+    JSON action:  only spawned when the river is clean.
+
+{
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: up
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: ***##
+**1xx
+***x#
+    Thinking: At (5, 1), the nearest dirt is at (6, 0), which is only 1 step away (moving right to (6, 1), then down to (6, 0)). This is a very close and accessible dirt spot. 
+
+Currently, there are no apples visible in the global scan — meaning no immediate reward is available. Eating an apple is not an option r...
+    JSON action:  accessible, it makes sense to clean it first.
+
+Therefore, I will clean at (6, 0).
+
+```json
+{
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 6,
+        "coord_y": 0
+    
+    Low-level action: left
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: ****#
+**1*x
+****x
+    Thinking: Currently, there are no apples in sight — the nearest apple is not found in the global scan. The only visible dirt is at (6, 0), which is at a distance of 3 from your current position (4, 1). Since apples only spawn when the river is clean (i.e., when dirt is removed), there is no immediate reward f...
+    JSON action:  goal.
+
+I will clean the dirt at (6, 0).
+
+{
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 6,
+        "coord_y": 0
+    }
+}
+    Low-level action: down
+    Reward: 0.00
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: ****x
+**1*x
+****x
+    Thinking: Given the current observation and global scan:
+
+- You are at (4, 2).
+- There are **no nearby apples** visible — the nearest apple is not found, meaning no immediate reward is available.
+- The nearest dirt is at (7, 2), which is **3 units away**.
+- Since apples only spawn when the river is clean (i.e...
+    JSON action:  to eat at a location with no apple would result in failure or no reward.
+- **Option 2 (Clean dirt)**: Necessary to enable apple spawning. The dirt at (7, 2) is currently present and needs to be clean
+    Low-level action: down
+    Reward: 0.00
+
+
+[Episode Summary]
+  Total Reward: 0.00
+  Rollout Time: 173.32s
+
+
+================================================================================
+GROUP 0 | EPISODE 0
+Total Reward: 0.00 | Steps: 10
+Final Scores: {1: 0.0}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: At (5,5), you are not on any dirt. Dirt is at (7,6) and (7,4). To clean dirt, you must be on the same cell as the dirt. Currently, you are at (5,5), so you can't clean either dirt cell directly.
+
+Apples only spawn on land when the river is clean — meaning dirt must be cleaned. Since you are not adja...
+    Action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: At (6,5), you are not on any dirt. The dirt is at (7,6), (8,5), (7,4).  
+
+To spawn apples, the river must be clean — meaning there must be no dirt. So, to enable apple spawning, you need to clean the dirt cells.  
+
+You can only clean dirt if you are on the same cell. So:
+
+- You are at (6,5).  
+- The...
+    Action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: At (7,5), you can see dirt at (7,6), (8,5), and (7,4).  
+
+To spawn apples, the river must be clean — meaning dirt must be removed. Apples only appear on land when the river is clean, but cleaning dirt gives no points — only enabling apple spawning.  
+
+Currently, you are at (7,5), which is **not** a ...
+    Action: up
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: At (7,6):  
+- There is dirt at (7,6) and (8,5).  
+- You are on (7,6), which has dirt.  
+
+Action options:  
+- **clean**: You can clean the dirt at (7,6). This removes dirt from your cell, which helps make the river cleaner (enabling future apple spawning).  
+- **eat**: Cannot eat an apple here — no a...
+    Action: clean
+    Reward: 0.00
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: You are at (7,6). Dirt is at (8,5).  
+
+To clean the dirt, you must be on the same cell as the dirt. You are not currently on (8,5).  
+
+So:  
+- You cannot clean dirt right now.  
+- You cannot eat an apple because there's no apple (apples only spawn when the river is clean, and dirt is not cleaned yet...
+    Action: right
+    Reward: 0.00
+
+--- Step 6 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+xx#**
+    Thinking: You are at (8,6). Dirt is at (8,5), directly below you.  
+
+Since you can only clean dirt if you are on the same cell, you must **move down to (8,5)** to clean it.  
+
+Cleaning dirt gives no points, but it is necessary to enable apple spawning on land. Once the river is clean (i.e., no dirt), apples m...
+    Action: down
+    Reward: 0.00
+
+--- Step 7 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: You are at (8,5), which has dirt.  
+Dirt is also at (7,4).  
+
+Action analysis:  
+- You can **clean** dirt only if you're on a cell with dirt.  
+- Cleaning dirt gives no points, but removes dirt and may allow apples to spawn later.  
+- Apples only spawn on land when the river is clean (i.e., when dir...
+    Action: clean
+    Reward: 0.00
+
+--- Step 8 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: You are at (8,5). Dirt is at (7,4).  
+
+To clean dirt, you must be on the same cell as the dirt. You are not currently on (7,4), so you cannot clean it yet.  
+
+Eating an apple requires being on a cell with an apple, which only spawns if the river is clean (i.e., dirt is cleaned). Since there's curren...
+    Action: left
+    Reward: 0.00
+
+--- Step 9 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*x#x*
+    Thinking: At (7,5), you are not on dirt (dirt is at (7,4)), so you cannot clean it directly. You must first move to (7,4) to clean the dirt.  
+
+**Action: down** (to move to (7,4))  
+→ Now at (7,4), you can **clean** the dirt.  
+
+Cleaning dirt gives no points, but it makes land cleaner, which may allow apples ...
+    Action: down
+    Reward: 0.00
+
+--- Step 10 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xxx*
+    Thinking: You are at (7,4), and there is dirt at your position.  
+
+Action: **clean**  
+Reason: Cleaning dirt is necessary to enable apples to spawn. Since apples only appear on land when the river is clean (i.e., dirt is removed), you must clean the dirt at (7,4) to potentially gain apples later. Cleaning giv...
+    Action: clean
+    Reward: 0.00
+
+
+[Episode Summary]
+  Total Reward: 0.00
+  Rollout Time: 197.97s
+
+
+================================================================================
+GROUP 0 | EPISODE 0
+Total Reward: 0.60 | Steps: 10
+Final Scores: {1: 0.6000000000000001}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: up
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 6 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+xx#**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: down
+    Reward: 0.00
+
+--- Step 7 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+--- Step 8 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: left
+    Reward: 0.00
+
+--- Step 9 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*x#x*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: down
+    Reward: 0.00
+
+--- Step 10 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xxx*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+
+[Episode Summary]
+  Total Reward: 0.60
+  Rollout Time: 35.20s
+
+
+================================================================================
+GROUP 1 | EPISODE 0
+Total Reward: 0.60 | Steps: 10
+Final Scores: {1: 0.6000000000000001}
+================================================================================
+
+--- Step 1 ---
+
+  [Agent 1]
+    Observation: ***x#
+**1xx
+***x#
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 2 ---
+
+  [Agent 1]
+    Observation: **x#x
+**1x#
+**x#x
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 3 ---
+
+  [Agent 1]
+    Observation: *x#x*
+*x1#*
+*x#x*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: up
+    Reward: 0.00
+
+--- Step 4 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+--- Step 5 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xx#*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: right
+    Reward: 0.00
+
+--- Step 6 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+xx#**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: down
+    Reward: 0.00
+
+--- Step 7 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 8,
+        "coord_y": 3
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+--- Step 8 ---
+
+  [Agent 1]
+    Observation: xxx**
+xx1**
+x#x**
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: left
+    Reward: 0.00
+
+--- Step 9 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*x#x*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: down
+    Reward: 0.00
+
+--- Step 10 ---
+
+  [Agent 1]
+    Observation: *xxx*
+*x1x*
+*xxx*
+    Thinking: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    JSON action: {
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 4
+    }
+}
+    Low-level action: clean
+    Reward: 0.20
+
+
+[Episode Summary]
+  Total Reward: 0.60
+  Rollout Time: 35.05s
+

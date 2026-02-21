@@ -6,29 +6,12 @@ def get_system_context() -> str:
     """
     Returns the static context describing the game rules and mechanics.
     """
-    return """
-You are an autonomous AI agent playing a cooperative grid-world game named 'Cleanup'.
-
-### THE WORLD
-- The world is a 2D grid. Coordinates (0,0) are at the Top-Left.
-- **Land ('*')**: Where apples spawn.
-- **River ('x')**: A vertical band of water where dirt accumulates.
-
-### THE OBJECTIVES
-1. **Eat Apples ('a')**: You get **+1.0 reward** for eating an apple.
-2. **Clean Dirt ('#')**: You get **+0.0 immediate reward** for cleaning dirt.
-
-### THE MECHANIC (CRITICAL)
-- Apples spawn on Land.
-- Dirt accumulates in the River.
-- **Apple spawn rate depends on the River's cleanliness.**
-- If the river is full of dirt, **NO apples will spawn**.
-- To survive and get high scores, agents must sacrifice their time to clean the river, even though it gives no immediate points.
-- If you only eat and never clean, the ecosystem will collapse, and you will starve.
-
-### YOUR CAPABILITIES
-You cannot move diagonally. You have high-level functions to navigate and interact.
-"""
+    return (
+        "You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+1.0 each). "
+        "Rules: Apples only spawn on land when the river is clean (less dirt = more apples). "
+        "Cleaning dirt gives no immediate reward but is necessary to enable apple spawning. "
+        "You cannot move diagonally. You have high-level functions to navigate and interact."
+    )
 
 def get_action_api() -> str:
     """

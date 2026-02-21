@@ -9,8 +9,8 @@ Legend:
 - '1'..'9' = agents (rendered over cells)
 
 Scoring:
-- +0.0 points for cleaning one dirt ('#') (no immediate reward, but enables apple spawning)
-- +1.0 points for eating one apple ('a')
+- clean_reward points for cleaning one dirt ('#') (default 0.0, configurable via Config)
+- eat_reward points for eating one apple ('a') (default 1.0, configurable via Config)
 
 Apples auto-generate on land. By default, apples only begin spawning once the
 current dirt count drops below the initial dirt count at reset; as it gets
@@ -60,6 +60,10 @@ class Config:
     # Limits
     max_apples: Optional[int] = 5  # cap apples present on grid
     max_dirts: Optional[int] = None   # None => unlimited
+
+    # Rewards
+    eat_reward: float = 1.0    # reward for eating an apple
+    clean_reward: float = 0.0  # reward for cleaning a dirt tile (0 = no immediate reward)
 
     # Initial dirt placement (on reset)
     init_dirt_prob: float = 0.35  # probability per water cell to start as dirt
@@ -250,12 +254,12 @@ class CleanupEnvMove:
         for i, (x, y) in self.agents.items():
             item = self.items[y][x]
             if item == 'a' and chosen_action.get(i) == "eat":
-                rewards[i] += 1.0
-                self.scores[i] += 1.0
+                rewards[i] += self.cfg.eat_reward
+                self.scores[i] += self.cfg.eat_reward
                 self.items[y][x] = None
             elif item == '#' and chosen_action.get(i) == "clean":
-                rewards[i] += 0.0  # No immediate reward for cleaning (prevents lazy agent trap)
-                self.scores[i] += 0.0  # Cleaning is necessary to spawn apples, but not rewarded directly
+                rewards[i] += self.cfg.clean_reward
+                self.scores[i] += self.cfg.clean_reward
                 self.items[y][x] = None
 
         # Spawn phase

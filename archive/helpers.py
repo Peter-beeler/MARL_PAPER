@@ -82,6 +82,7 @@ def move_to(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, b
 
     # Simple Manhattan pathfinding
     # Prioritize X movement, then Y movement (arbitrary choice)
+    print(f"Moving from ({curr_x}, {curr_y}) towards ({coord_x}, {coord_y}).")  # Debug statement
     if curr_x < coord_x:
         return "right", False
     elif curr_x > coord_x:
@@ -114,7 +115,6 @@ def clean_at(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, 
         return "stay", True
 
     curr_x, curr_y = env.agents[agent_id]
-
     # If not at target, move there
     if (curr_x, curr_y) != (coord_x, coord_y):
         if curr_x < coord_x:

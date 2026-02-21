@@ -15,7 +15,7 @@ Key features:
 - Coordinate-based observations
 """
 
-import os
+import os, sys
 import json
 import torch
 import numpy as np
@@ -44,6 +44,7 @@ from datetime import timedelta
 from accelerate.utils import InitProcessGroupKwargs
 
 # Import the move environment
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from env_move import CleanupEnvMove, Config as EnvConfigMove
 
 # Suppress the gradient checkpointing + KV cache warning
@@ -161,6 +162,8 @@ class GRPOConfig:
 
     # Environment settings
     max_env_steps: int = 50
+    eat_reward: float = 1.0    # Reward for eating an apple (passed to env)
+    clean_reward: float = 0.0  # Reward for cleaning a dirt tile (passed to env)
 
     # Checkpoint settings
     output_dir: str = "./grpo_text_action_checkpoints"
@@ -440,7 +443,9 @@ class CleanupGameGRPOText:
         self.env_config = EnvConfigMove(
             n_agents=config.num_agents,
             max_steps=config.max_env_steps,
-            seed=config.seed
+            seed=config.seed,
+            eat_reward=config.eat_reward,
+            clean_reward=config.clean_reward,
         )
 
         # Training statistics
@@ -524,7 +529,9 @@ class CleanupGameGRPOText:
             eval_env = CleanupEnvMove(EnvConfigMove(
                 n_agents=self.config.num_agents,
                 max_steps=self.config.max_env_steps,
-                seed=self.config.seed + 1000 + i
+                seed=self.config.seed + 1000 + i,
+                eat_reward=self.config.eat_reward,
+                clean_reward=self.config.clean_reward,
             ))
             eval_env.reset()
             state = eval_env.get_state()
@@ -601,6 +608,12 @@ class CleanupGameGRPOText:
 
         return obs_text
 
+    def _clean_reward_desc(self) -> str:
+        """Return the reward description for cleaning, based on config."""
+        if self.config.clean_reward > 0.0:
+            return f"- Cleaning dirt gives +{self.config.clean_reward} reward AND enables apple spawning (less dirt = more apples). "
+        return "- Cleaning dirt itself gives NO points, but is necessary to enable apple spawning. "
+
     def create_thinking_prompt(self, obs: str, agent_id: int, step: int, env=None) -> str:
         """Create a prompt for stage 1: thinking/reasoning."""
         # Convert observation to coordinate format
@@ -610,9 +623,9 @@ class CleanupGameGRPOText:
             obs_text = obs
 
         system_msg = (
-            "You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+1.0 each). "
+            f"You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+{self.config.eat_reward} each). "
             "Rules: - Apples only spawn on land when the river is clean (less dirt = more apples). "
-            "- Cleaning dirt itself gives NO points, but is necessary to enable apple spawning. "
+            + self._clean_reward_desc() +
             "- You can only eat/clean items at your position. "
             "Available actions: "
             "up = move one step up (increase y) "
@@ -652,9 +665,9 @@ class CleanupGameGRPOText:
             Chat template formatted prompt string
         """
         system_msg = (
-            "You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+1.0 each). "
+            f"You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+{self.config.eat_reward} each). "
             "Rules: - Apples only spawn on land when the river is clean (less dirt = more apples). "
-            "- Cleaning dirt itself gives NO points, but is necessary to enable apple spawning. "
+            + self._clean_reward_desc() +
             "- You can only eat/clean items at your position. "
             "Available actions: "
             "up = move one step up (increase y) "
@@ -696,9 +709,9 @@ class CleanupGameGRPOText:
             obs_text = obs
 
         system_msg = (
-            "You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+1.0 each). "
+            f"You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+{self.config.eat_reward} each). "
             "Rules: - Apples only spawn on land when the river is clean (less dirt = more apples). "
-            "- Cleaning dirt itself gives NO points, but is necessary to enable apple spawning. "
+            + self._clean_reward_desc() +
             "- You can only eat/clean items at your position. "
             "Available actions: "
             "up = move one step up (increase y) "
@@ -736,6 +749,11 @@ class CleanupGameGRPOText:
         Returns:
             Chat template formatted prompt string
         """
+        clean_line = (
+            f"- Cleaning dirt: +{self.config.clean_reward} reward for you AND enables apple spawning\n"
+            if self.config.clean_reward > 0.0
+            else "- Cleaning dirt: no immediate reward, but enables apple spawning\n"
+        )
         system_msg = (
             "You are an agent in a multi-agent cleanup game. The game has:\n"
             "- A river with dirt (#) that can be cleaned\n"
@@ -743,8 +761,8 @@ class CleanupGameGRPOText:
             "- Multiple agents (numbered 1, 2, 3, ...) working together\n\n"
             "Actions: up, down, left, right, clean (remove dirt), eat (consume apple), stay.\n\n"
             "Rewards:\n"
-            "- Cleaning dirt: Positive reward shared by team\n"
-            "- Eating apple: Positive reward for you\n"
+            + clean_line +
+            f"- Eating apple: +{self.config.eat_reward} reward for you\n"
             "- Dirt respawns if river isn't clean enough\n\n"
             "Output ONLY ONE action word: up, down, left, right, clean, eat, or stay."
         )
@@ -770,9 +788,9 @@ class CleanupGameGRPOText:
             thinking_text: The generated thinking/reasoning text
         """
         system_msg = (
-            "You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+1.0 each). "
+            f"You are an agent in a cleanup game. Your goal is to maximize points by eating apples (+{self.config.eat_reward} each). "
             "Rules: - Apples only spawn on land when the river is clean (less dirt = more apples). "
-            "- Cleaning dirt itself gives NO points, but is necessary to enable apple spawning. "
+            + self._clean_reward_desc() +
             "- You can only eat/clean items at your position. "
             "Available actions: "
             "up = move one step up (increase y) "
@@ -3063,6 +3081,7 @@ class CleanupGameGRPOText:
         # Run one episode with detailed logging
         env = CleanupEnvMove(self.env_config)
         obs = env.reset()
+        initial_dirt_count = sum(row.count('#') for row in env.items)
 
         # Select model (reference model not available in standard GRPO)
         if use_ref_model and self.ref_model is None:
@@ -3252,7 +3271,7 @@ class CleanupGameGRPOText:
         log_and_save(f"Total Reward: {total_reward:.2f}")
         log_and_save(f"Steps Taken: {step + 1}")
         log_and_save(f"Final Scores: {info['scores']}")
-        log_and_save(f"Dirt Cleaned: {self.env_config.n_agents * step + 1 - info['dirt_count']} (estimate)")
+        log_and_save(f"Dirt Cleaned: {initial_dirt_count - info['dirt_count']}")
         log_and_save(f"\nTiming:")
         log_and_save(f"  Average Step Time: {avg_step_time:.2f}s")
         log_and_save(f"  Total Rollout Time: {total_rollout_time:.2f}s")
@@ -3288,6 +3307,10 @@ def parse_args():
                        help="Episodes per GPU when using multi-GPU (default: 4)")
     parser.add_argument("--num_agents", type=int, default=1)
     parser.add_argument("--max_env_steps", type=int, default=20)
+    parser.add_argument("--eat_reward", type=float, default=1.0,
+                       help="Reward for eating an apple (default: 1.0)")
+    parser.add_argument("--clean_reward", type=float, default=0.0,
+                       help="Reward for cleaning a dirt tile (default: 0.0)")
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--output_dir", type=str, default="./grpo_text_action_checkpoints")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
@@ -3380,6 +3403,8 @@ def main():
         episodes_per_gpu=args.episodes_per_gpu,
         num_agents=args.num_agents,
         max_env_steps=args.max_env_steps,
+        eat_reward=args.eat_reward,
+        clean_reward=args.clean_reward,
         learning_rate=args.learning_rate,
         output_dir=args.output_dir,
         device=args.device,
