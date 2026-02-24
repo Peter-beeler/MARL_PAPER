@@ -19,12 +19,12 @@ The ACTION_FUNC_MAP and execute_action() below handle this generically
 by unpacking the "args" dict from the LLM's JSON response.
 """
 
-import json
+import json, sys, os
 import re
 import time
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # >>> TODO: Update these imports to match your environment / helpers / prompt_template
 from env_move import CleanupEnvMove, Config
 import helpers

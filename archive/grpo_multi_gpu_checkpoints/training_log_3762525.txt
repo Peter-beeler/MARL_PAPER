@@ -1,0 +1,2496 @@
+2026-02-24 10:15:10.112487: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-02-24 10:15:10.112729: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771946110.126675 1070751 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771946110.127176 1070754 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771946110.130929 1070751 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+E0000 00:00:1771946110.131499 1070754 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1771946110.142991 1070751 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143010 1070751 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143013 1070751 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143015 1070751 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143043 1070754 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143060 1070754 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143063 1070754 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.143065 1070754 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-02-24 10:15:10.146490: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:15:10.146490: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:15:10.342712: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-02-24 10:15:10.345532: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771946110.356468 1070753 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771946110.359328 1070752 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771946110.360627 1070753 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+E0000 00:00:1771946110.363506 1070752 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1771946110.372286 1070753 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.372301 1070753 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.372303 1070753 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.372305 1070753 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.375048 1070752 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.375063 1070752 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.375065 1070752 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771946110.375067 1070752 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-02-24 10:15:10.375740: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:15:10.378773: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Using Accelerator with 4 processes
+Loading model: Qwen/Qwen3-4B-Instruct-2507
+Using Accelerator with 4 processes
+Using Accelerator with 4 processes
+Using Accelerator with 4 processes
+Helper functions: ['move_to', 'clean_at', 'eat_at', 'random_explore']
+Max new tokens: 384 (thinking=256 + action=128)
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:18<00:37, 18.92s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:18<00:37, 18.95s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:18<00:37, 18.95s/it]Loading checkpoint shards:  33%|███▎      | 1/3 [00:18<00:37, 18.95s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:39<00:20, 20.00s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:39<00:20, 20.05s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:39<00:20, 20.04s/it]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:39<00:20, 20.04s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 11.09s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 11.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 11.08s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.39s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.39s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.39s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 11.10s/it]Loading checkpoint shards: 100%|██████████| 3/3 [00:40<00:00, 13.40s/it]
+Applying LoRA to modules: ['gate_proj', 'q_proj', 'v_proj', 'down_proj', 'k_proj', 'up_proj', 'o_proj']
+trainable params: 16,515,072 || all params: 4,038,983,168 || trainable%: 0.4089
+[CUDA Memory - After LoRA model loaded] Allocated: 0.00GB, Reserved: 0.00GB, Peak: 0.00GB
+GRPO with inner epochs: Old model will be created on first group
+Number of trainable parameters: 16515072
+Number of trainable parameters: 16515072
+Number of trainable parameters: 16515072
+Number of trainable parameters: 16515072
+NCCL version 2.21.5+cuda12.4
+[GPU0] Model prepared
+[GPU2] Model prepared
+[GPU1] Model prepared
+[GPU3] Model prepared
+
+=== Pre-Training Evaluation ===
+
+=== Pre-Training Evaluation ===
+
+=== Pre-Training Evaluation ===
+wandb: Using wandb-core as the SDK backend.  Please refer to https://wandb.me/wandb-core for more information.
+wandb: Currently logged in as: maoyi8219 (maoyi8219-ohio-state-buckeyes) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.19.8
+wandb: Run data is saved locally in /users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/wandb/run-20260224_101607-3uhs03sk
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run compound_run_clean0.0
+wandb: ⭐️ View project at https://wandb.ai/maoyi8219-ohio-state-buckeyes/grpo
+wandb: 🚀 View run at https://wandb.ai/maoyi8219-ohio-state-buckeyes/grpo/runs/3uhs03sk
+Initialized wandb project: grpo
+Generated 20 fixed evaluation states
+
+=== Pre-Training Evaluation ===
+
+=== Evaluation (10 episodes) ===
+Moving from (7, 5) towards (9, 5).
+Moving from (7, 4) towards (9, 5).
+Moving from (9, 4) towards (10, 3).
+Moving from (6, 4) towards (4, 3).
+  GPU2 Ep3: R=4.00, Steps=30, Time=100.48s
+  GPU1 Ep2: R=0.00, Steps=30, Time=103.70s
+  GPU0 Ep1: R=1.00, Steps=30, Time=101.63s
+  GPU3 Ep4: R=0.00, Steps=30, Time=107.41s
+  GPU2 Ep7: R=0.00, Steps=30, Time=96.90s
+  GPU1 Ep6: R=0.00, Steps=30, Time=100.88s
+  GPU0 Ep5: R=0.00, Steps=30, Time=101.08s
+Moving from (8, 8) towards (13, 8).
+Moving from (9, 8) towards (13, 8).
+  GPU3 Ep8: R=0.00, Steps=30, Time=103.91s
+Moving from (6, 4) towards (5, 5).
+Moving from (6, 4) towards (5, 5).
+Moving from (6, 4) towards (5, 5).
+Moving from (6, 4) towards (5, 5).
+  GPU1 Ep10: R=0.00, Steps=30, Time=98.12s
+  GPU0 Ep9: R=0.00, Steps=30, Time=100.93s
+
+Reward: 0.50±1.20 [0.00, 4.00]
+Evaluation Time: avg=101.50s/episode, total=303.67s
+
+======================================================================
+GRPO Training with Compound High-Level Actions (Single-Stage)
+======================================================================
+
+[Model] Qwen/Qwen3-4B-Instruct-2507
+[Loss Type] DRGRPO
+[Environment] Move (directional actions via helpers)
+[Helpers] ['move_to', 'clean_at', 'eat_at', 'random_explore']
+[Max New Tokens] 384 (thinking=256 + action=128)
+[Agents] 3
+[Episodes] 2048
+[Multi-GPU] 4 GPUs × 8 eps/GPU = 32 per group
+======================================================================
+
+
+[Group 0] Episodes 0-31 (expected)
+Creating old model (first group)...
+  ✓ Old model created and frozen
+
+  Sample generation (compound):
+    Obs: You are at (5, 3). You see dirt at (7, 2) and dirt at (7, 4).
+    Response (thinking+JSON): '{
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}'
+    → Low-level action: right
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 6) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=104.93s
+  [GPU1] Ep0: R=3.00, Steps=30, Time=107.66s
+[CUDA Memory - After episode rollout] Allocated: 30.42GB, Reserved: 45.69GB, Peak: 33.28GB
+  [GPU3] Ep0: R=0.00, Steps=30, Time=111.75s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 3) towards (9, 2).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+  [GPU2] Ep1: R=0.00, Steps=30, Time=104.52s
+Moving from (2, 5) towards (5, 5).
+Moving from (5, 5) towards (5, 8).
+  [GPU1] Ep1: R=3.00, Steps=30, Time=107.23s
+Moving from (5, 5) towards (5, 8).
+  [GPU0] Ep1: R=3.00, Steps=30, Time=107.99s
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep1: R=3.00, Steps=30, Time=112.06s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep2: R=3.00, Steps=30, Time=104.66s
+  [GPU1] Ep2: R=0.00, Steps=30, Time=107.06s
+  [GPU0] Ep2: R=0.00, Steps=30, Time=108.17s
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep2: R=3.00, Steps=30, Time=112.47s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep3: R=3.00, Steps=30, Time=104.94s
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU1] Ep3: R=3.00, Steps=30, Time=107.87s
+  [GPU0] Ep3: R=3.00, Steps=30, Time=108.39s
+Moving from (8, 3) towards (10, 2).
+Moving from (9, 3) towards (10, 2).
+  [GPU3] Ep3: R=3.00, Steps=30, Time=112.76s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.19s
+Moving from (2, 8) towards (2, 5).
+  [GPU1] Ep4: R=3.00, Steps=30, Time=107.53s
+Moving from (2, 7) towards (2, 5).
+  [GPU0] Ep4: R=3.00, Steps=30, Time=108.36s
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+  [GPU3] Ep4: R=3.00, Steps=30, Time=112.86s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+  [GPU2] Ep5: R=2.00, Steps=30, Time=105.05s
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU1] Ep5: R=3.00, Steps=30, Time=107.47s
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (2, 8) towards (2, 5).
+  [GPU0] Ep5: R=3.00, Steps=30, Time=108.07s
+Moving from (2, 7) towards (2, 5).
+  [GPU3] Ep5: R=3.00, Steps=30, Time=112.82s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 3) towards (9, 2).
+Moving from (2, 8) towards (2, 5).
+Moving from (8, 3) towards (9, 2).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 5) towards (5, 7).
+  [GPU2] Ep6: R=2.00, Steps=30, Time=104.85s
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+  [GPU1] Ep6: R=3.00, Steps=30, Time=107.86s
+  [GPU0] Ep6: R=3.00, Steps=30, Time=107.77s
+  [GPU3] Ep6: R=0.00, Steps=30, Time=112.72s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 6) towards (3, 6).
+  [GPU2] Ep7: R=4.00, Steps=30, Time=104.79s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+  [GPU1] Ep7: R=0.00, Steps=30, Time=107.83s
+  [GPU0] Ep7: R=0.00, Steps=30, Time=108.12s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=112.69s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 2 trajectory
+  Reward: 2.31±1.28 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:20% | down:23% | left:22% | right:15% | clean:15% | eat:2% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.66 GiB is free. Including non-PyTorch memory, this process has 76.58 GiB memory in use. Of the allocated memory 74.12 GiB is allocated by PyTorch, and 874.24 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.66 GiB is free. Including non-PyTorch memory, this process has 76.58 GiB memory in use. Of the allocated memory 74.12 GiB is allocated by PyTorch, and 874.24 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 1] Episodes 32-63 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 4) towards (5, 5).
+Moving from (2, 5) towards (3, 6).
+Moving from (8, 3) towards (9, 1).
+Moving from (9, 3) towards (11, 2).
+Moving from (2, 5) towards (5, 5).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=105.60s
+  [GPU1] Ep0: R=4.00, Steps=30, Time=108.90s
+  [GPU0] Ep0: R=3.00, Steps=30, Time=109.19s
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep0: R=3.00, Steps=30, Time=114.01s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 6) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (1, 4).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU2] Ep1: R=3.00, Steps=30, Time=105.29s
+  [GPU0] Ep1: R=1.00, Steps=30, Time=107.86s
+Moving from (1, 4) towards (1, 1).
+  [GPU1] Ep1: R=4.00, Steps=30, Time=108.96s
+  [GPU3] Ep1: R=2.00, Steps=30, Time=113.70s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 6) towards (9, 7).
+Moving from (2, 5) towards (5, 5).
+  [GPU2] Ep2: R=3.00, Steps=30, Time=105.64s
+Moving from (8, 6) towards (10, 6).
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU1] Ep2: R=4.00, Steps=30, Time=108.45s
+  [GPU0] Ep2: R=3.00, Steps=30, Time=109.39s
+  [GPU3] Ep2: R=3.00, Steps=30, Time=113.73s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 6) towards (3, 7).
+  [GPU2] Ep3: R=3.00, Steps=30, Time=105.90s
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep3: R=3.00, Steps=30, Time=108.28s
+  [GPU0] Ep3: R=3.00, Steps=30, Time=109.48s
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep3: R=3.00, Steps=30, Time=113.31s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep4: R=0.00, Steps=30, Time=105.69s
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep4: R=3.00, Steps=30, Time=109.05s
+  [GPU0] Ep4: R=3.00, Steps=30, Time=108.50s
+  [GPU3] Ep4: R=0.00, Steps=30, Time=113.48s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 6) towards (4, 6).
+Moving from (7, 5) towards (4, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep5: R=3.00, Steps=30, Time=105.32s
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep5: R=3.00, Steps=30, Time=107.65s
+  [GPU0] Ep5: R=3.00, Steps=30, Time=109.41s
+  [GPU3] Ep5: R=0.00, Steps=30, Time=113.42s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 6) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 6) towards (3, 7).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep6: R=3.00, Steps=30, Time=105.54s
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 6) towards (3, 6).
+  [GPU1] Ep6: R=1.00, Steps=30, Time=107.86s
+Moving from (8, 1) towards (12, 1).
+  [GPU0] Ep6: R=4.00, Steps=30, Time=109.38s
+  [GPU3] Ep6: R=0.00, Steps=30, Time=112.87s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep7: R=0.00, Steps=30, Time=105.56s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (8, 3) towards (9, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (9, 3) towards (9, 5).
+Moving from (3, 5) towards (3, 7).
+Moving from (3, 8) towards (1, 8).
+  [GPU1] Ep7: R=3.00, Steps=30, Time=109.40s
+  [GPU0] Ep7: R=4.00, Steps=30, Time=109.41s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 6) towards (3, 7).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=113.97s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 2 trajectory
+  Reward: 2.53±1.29 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:18% | down:23% | left:21% | right:16% | clean:15% | eat:3% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.41 GiB is free. Including non-PyTorch memory, this process has 76.83 GiB memory in use. Of the allocated memory 74.10 GiB is allocated by PyTorch, and 1.13 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.41 GiB is free. Including non-PyTorch memory, this process has 76.83 GiB memory in use. Of the allocated memory 74.10 GiB is allocated by PyTorch, and 1.13 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 2] Episodes 64-95 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 6) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 5) towards (0, 4).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (1, 5) towards (0, 4).
+Moving from (2, 5) towards (5, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=105.81s
+  [GPU1] Ep0: R=3.00, Steps=30, Time=108.19s
+  [GPU0] Ep0: R=0.00, Steps=30, Time=108.95s
+Moving from (2, 3) towards (2, 1).
+  [GPU3] Ep0: R=4.00, Steps=30, Time=114.11s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 5) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 5) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep1: R=0.00, Steps=30, Time=105.39s
+  [GPU1] Ep1: R=2.00, Steps=30, Time=108.27s
+  [GPU0] Ep1: R=3.00, Steps=30, Time=109.33s
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep1: R=3.00, Steps=30, Time=113.68s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+  [GPU2] Ep2: R=3.00, Steps=30, Time=105.22s
+Moving from (5, 3) towards (3, 2).
+  [GPU1] Ep2: R=4.00, Steps=30, Time=108.46s
+  [GPU0] Ep2: R=3.00, Steps=30, Time=108.74s
+  [GPU3] Ep2: R=0.00, Steps=30, Time=114.86s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 3) towards (10, 2).
+  [GPU2] Ep3: R=3.00, Steps=30, Time=105.51s
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU1] Ep3: R=3.00, Steps=30, Time=108.64s
+Moving from (2, 7) towards (2, 5).
+  [GPU0] Ep3: R=4.00, Steps=30, Time=109.17s
+  [GPU3] Ep3: R=3.00, Steps=30, Time=114.32s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 6) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.80s
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 5) towards (2, 5).
+Moving from (5, 5) towards (2, 5).
+Moving from (4, 5) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (0, 4).
+Moving from (4, 8) towards (1, 8).
+  [GPU1] Ep4: R=0.00, Steps=30, Time=109.03s
+  [GPU0] Ep4: R=0.00, Steps=30, Time=109.75s
+Moving from (2, 3) towards (2, 1).
+  [GPU3] Ep4: R=4.00, Steps=30, Time=115.09s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 5) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+  [GPU2] Ep5: R=0.00, Steps=30, Time=105.36s
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 5) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU1] Ep5: R=3.00, Steps=30, Time=108.46s
+  [GPU0] Ep5: R=0.00, Steps=30, Time=108.77s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU3] Ep5: R=3.00, Steps=30, Time=115.10s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 6) towards (4, 6).
+Moving from (7, 5) towards (4, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep6: R=3.00, Steps=30, Time=105.57s
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+  [GPU1] Ep6: R=0.00, Steps=30, Time=108.58s
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU0] Ep6: R=3.00, Steps=30, Time=108.74s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+  [GPU3] Ep6: R=3.00, Steps=30, Time=115.04s
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep7: R=3.00, Steps=30, Time=105.76s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+  [GPU1] Ep7: R=3.00, Steps=30, Time=109.14s
+Moving from (4, 8) towards (1, 8).
+  [GPU0] Ep7: R=3.00, Steps=30, Time=108.83s
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 3) towards (10, 2).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=114.20s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 7 trajectory
+  Reward: 2.34±1.43 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:18% | down:24% | left:21% | right:16% | clean:16% | eat:2% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.37 GiB is free. Including non-PyTorch memory, this process has 76.87 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.18 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.37 GiB is free. Including non-PyTorch memory, this process has 76.87 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.18 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 3] Episodes 96-127 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU2] Ep0: R=0.00, Steps=30, Time=106.00s
+  [GPU1] Ep0: R=3.00, Steps=30, Time=108.85s
+  [GPU0] Ep0: R=3.00, Steps=30, Time=109.13s
+  [GPU3] Ep0: R=0.00, Steps=30, Time=114.33s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+  [GPU2] Ep1: R=3.00, Steps=30, Time=105.74s
+Moving from (8, 3) towards (10, 2).
+Moving from (8, 6) towards (5, 6).
+Moving from (8, 5) towards (5, 5).
+Moving from (3, 5) towards (3, 7).
+Moving from (9, 3) towards (10, 2).
+  [GPU1] Ep1: R=3.00, Steps=30, Time=109.02s
+  [GPU0] Ep1: R=3.00, Steps=30, Time=108.94s
+  [GPU3] Ep1: R=3.00, Steps=30, Time=113.87s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep2: R=0.00, Steps=30, Time=102.33s
+Moving from (2, 5) towards (2, 3).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (10, 2).
+  [GPU1] Ep2: R=3.00, Steps=30, Time=108.64s
+Moving from (2, 3) towards (2, 1).
+  [GPU0] Ep2: R=3.00, Steps=30, Time=108.83s
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep2: R=3.00, Steps=30, Time=114.48s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (7, 6) towards (9, 7).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (8, 6) towards (10, 6).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep3: R=4.00, Steps=30, Time=105.46s
+Moving from (7, 6) towards (9, 7).
+Moving from (8, 6) towards (10, 6).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+Moving from (1, 6) towards (1, 3).
+  [GPU1] Ep3: R=4.00, Steps=30, Time=108.54s
+Moving from (5, 5) towards (5, 7).
+  [GPU0] Ep3: R=2.00, Steps=30, Time=109.44s
+  [GPU3] Ep3: R=0.00, Steps=30, Time=114.54s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.26s
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (2, 8) towards (2, 5).
+  [GPU1] Ep4: R=3.00, Steps=30, Time=108.92s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU0] Ep4: R=0.00, Steps=30, Time=108.43s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 6) towards (1, 5).
+Moving from (1, 6) towards (0, 8).
+Moving from (0, 6) towards (0, 8).
+  [GPU3] Ep4: R=3.00, Steps=30, Time=114.25s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 5) towards (9, 6).
+Moving from (8, 5) towards (9, 6).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep5: R=4.00, Steps=30, Time=105.95s
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU1] Ep5: R=3.00, Steps=30, Time=108.67s
+  [GPU0] Ep5: R=3.00, Steps=30, Time=108.61s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep5: R=3.00, Steps=30, Time=114.50s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 5) towards (5, 7).
+  [GPU2] Ep6: R=2.00, Steps=30, Time=105.76s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (8, 3) towards (10, 2).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (9, 3) towards (10, 2).
+  [GPU1] Ep6: R=3.00, Steps=30, Time=108.69s
+  [GPU0] Ep6: R=3.00, Steps=30, Time=108.53s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (5, 8) towards (1, 8).
+  [GPU3] Ep6: R=3.00, Steps=30, Time=113.21s
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep7: R=3.00, Steps=30, Time=104.97s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep7: R=0.00, Steps=30, Time=108.39s
+Moving from (3, 8) towards (1, 8).
+  [GPU0] Ep7: R=3.00, Steps=30, Time=108.91s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=113.15s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 2 trajectory
+  Reward: 2.47±1.27 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:19% | down:23% | left:22% | right:16% | clean:15% | eat:2% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.33 GiB is free. Including non-PyTorch memory, this process has 76.91 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.21 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.33 GiB is free. Including non-PyTorch memory, this process has 76.91 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.21 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 4] Episodes 128-159 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+Moving from (2, 6) towards (3, 7).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=105.37s
+  [GPU0] Ep0: R=0.00, Steps=30, Time=108.77s
+  [GPU1] Ep0: R=3.00, Steps=30, Time=108.79s
+Moving from (8, 3) towards (10, 2).
+  [GPU3] Ep0: R=3.00, Steps=30, Time=114.32s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (8, 3) towards (10, 2).
+Moving from (9, 3) towards (10, 2).
+  [GPU2] Ep1: R=3.00, Steps=30, Time=105.49s
+  [GPU1] Ep1: R=0.00, Steps=30, Time=107.53s
+  [GPU0] Ep1: R=4.00, Steps=30, Time=108.90s
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep1: R=3.00, Steps=30, Time=113.51s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 8) towards (12, 8).
+  [GPU2] Ep2: R=4.00, Steps=30, Time=105.69s
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 8) towards (12, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (9, 8) towards (12, 8).
+  [GPU1] Ep2: R=3.00, Steps=30, Time=108.15s
+  [GPU0] Ep2: R=0.00, Steps=30, Time=109.06s
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep2: R=3.00, Steps=30, Time=113.29s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 6) towards (5, 7).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 2) towards (9, 2).
+Moving from (2, 5) towards (1, 6).
+Moving from (4, 5) towards (5, 7).
+  [GPU2] Ep3: R=4.00, Steps=30, Time=105.89s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU1] Ep3: R=3.00, Steps=30, Time=108.70s
+  [GPU0] Ep3: R=3.00, Steps=30, Time=108.55s
+  [GPU3] Ep3: R=3.00, Steps=30, Time=114.01s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 6) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.97s
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep4: R=2.00, Steps=30, Time=108.84s
+  [GPU0] Ep4: R=3.00, Steps=30, Time=108.56s
+Moving from (8, 4) towards (9, 3).
+  [GPU3] Ep4: R=2.00, Steps=30, Time=114.52s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep5: R=0.00, Steps=30, Time=104.99s
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (5, 3) towards (3, 2).
+  [GPU1] Ep5: R=4.00, Steps=30, Time=108.73s
+  [GPU0] Ep5: R=3.00, Steps=30, Time=108.46s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (1, 6).
+Moving from (1, 6) towards (2, 7).
+  [GPU3] Ep5: R=3.00, Steps=30, Time=113.72s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (1, 6) towards (2, 7).
+  [GPU2] Ep6: R=3.00, Steps=30, Time=105.77s
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+  [GPU1] Ep6: R=3.00, Steps=30, Time=108.63s
+  [GPU0] Ep6: R=2.00, Steps=30, Time=109.71s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+  [GPU3] Ep6: R=3.00, Steps=30, Time=114.74s
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 5) towards (4, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 6) towards (4, 8).
+  [GPU2] Ep7: R=2.00, Steps=30, Time=105.56s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 5) towards (5, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+Moving from (4, 8) towards (1, 8).
+  [GPU1] Ep7: R=3.00, Steps=30, Time=108.61s
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (3, 8) towards (1, 8).
+  [GPU0] Ep7: R=3.00, Steps=30, Time=109.73s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=113.50s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 5 trajectory
+  Reward: 2.62±1.13 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:18% | down:23% | left:22% | right:16% | clean:16% | eat:2% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.29 GiB is free. Including non-PyTorch memory, this process has 76.95 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.26 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.29 GiB is free. Including non-PyTorch memory, this process has 76.95 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.26 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 5] Episodes 160-191 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+
+  Sample generation (compound):
+    Obs: You are at (5, 3). You see dirt at (7, 2) and dirt at (7, 4).
+    Response (thinking+JSON): '{
+    "action": "clean_at",
+    "agent_id": 1,
+    "args": {
+        "coord_x": 7,
+        "coord_y": 2
+    }
+}'
+    → Low-level action: right
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=106.01s
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep0: R=3.00, Steps=30, Time=109.02s
+[CUDA Memory - After episode rollout] Allocated: 30.43GB, Reserved: 76.40GB, Peak: 74.18GB
+  [GPU3] Ep0: R=0.00, Steps=30, Time=113.30s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 4) towards (5, 6).
+  [GPU2] Ep1: R=4.00, Steps=30, Time=105.77s
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+  [GPU1] Ep1: R=3.00, Steps=30, Time=108.73s
+  [GPU0] Ep1: R=3.00, Steps=30, Time=109.81s
+  [GPU3] Ep1: R=4.00, Steps=30, Time=114.22s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+  [GPU2] Ep2: R=3.00, Steps=30, Time=105.53s
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 6) towards (5, 7).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (6, 6) towards (5, 7).
+  [GPU1] Ep2: R=3.00, Steps=30, Time=108.10s
+Moving from (2, 6) towards (1, 5).
+Moving from (6, 2) towards (9, 2).
+  [GPU0] Ep2: R=4.00, Steps=30, Time=110.05s
+Moving from (1, 6) towards (0, 8).
+Moving from (0, 6) towards (0, 8).
+  [GPU3] Ep2: R=3.00, Steps=30, Time=113.66s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 5) towards (3, 7).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep3: R=3.00, Steps=30, Time=105.53s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 5) towards (4, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 6) towards (4, 8).
+  [GPU1] Ep3: R=2.00, Steps=30, Time=108.38s
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU0] Ep3: R=3.00, Steps=30, Time=109.52s
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep3: R=3.00, Steps=30, Time=114.14s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 6) towards (3, 7).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.20s
+Moving from (3, 8) towards (1, 8).
+Moving from (1, 6) towards (2, 7).
+  [GPU1] Ep4: R=3.00, Steps=30, Time=108.80s
+Moving from (2, 8) towards (2, 5).
+  [GPU0] Ep4: R=3.00, Steps=30, Time=110.07s
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 4) towards (4, 5).
+Moving from (7, 3) towards (9, 4).
+Moving from (8, 3) towards (9, 4).
+  [GPU3] Ep4: R=3.00, Steps=30, Time=114.55s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (9, 5) towards (12, 8).
+Moving from (8, 8) towards (12, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (10, 5) towards (12, 8).
+Moving from (9, 8) towards (12, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep5: R=0.00, Steps=30, Time=103.57s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (2, 3).
+Moving from (2, 6) towards (2, 3).
+Moving from (2, 5) towards (2, 3).
+  [GPU1] Ep5: R=2.00, Steps=30, Time=108.78s
+Moving from (2, 3) towards (2, 1).
+Moving from (2, 8) towards (2, 5).
+  [GPU0] Ep5: R=3.00, Steps=30, Time=109.84s
+Moving from (2, 7) towards (2, 5).
+  [GPU3] Ep5: R=2.00, Steps=30, Time=113.63s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep6: R=3.00, Steps=30, Time=105.13s
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU1] Ep6: R=3.00, Steps=30, Time=108.27s
+Moving from (7, 6) towards (4, 6).
+Moving from (7, 5) towards (4, 5).
+  [GPU0] Ep6: R=3.00, Steps=30, Time=109.27s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (1, 6) towards (2, 7).
+  [GPU3] Ep6: R=3.00, Steps=30, Time=114.02s
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep7: R=3.00, Steps=30, Time=105.30s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (8, 3) towards (10, 2).
+Moving from (4, 8) towards (1, 8).
+Moving from (7, 3) towards (9, 2).
+  [GPU1] Ep7: R=3.00, Steps=30, Time=108.73s
+Moving from (3, 8) towards (1, 8).
+Moving from (8, 3) towards (9, 2).
+  [GPU0] Ep7: R=3.00, Steps=30, Time=109.68s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=113.12s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 7 trajectory
+  Reward: 2.81±0.86 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:18% | down:24% | left:22% | right:15% | clean:15% | eat:3% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.25 GiB is free. Including non-PyTorch memory, this process has 76.99 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.29 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.25 GiB is free. Including non-PyTorch memory, this process has 76.99 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.29 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 6] Episodes 192-223 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 6) towards (9, 7).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 6) towards (10, 6).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep0: R=0.00, Steps=30, Time=105.72s
+  [GPU0] Ep0: R=4.00, Steps=30, Time=108.90s
+  [GPU1] Ep0: R=3.00, Steps=30, Time=108.98s
+  [GPU3] Ep0: R=3.00, Steps=30, Time=113.38s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU2] Ep1: R=3.00, Steps=30, Time=105.24s
+Moving from (8, 3) towards (10, 2).
+Moving from (7, 6) towards (9, 7).
+Moving from (6, 4) towards (5, 6).
+Moving from (9, 3) towards (10, 2).
+  [GPU1] Ep1: R=4.00, Steps=30, Time=109.21s
+  [GPU0] Ep1: R=3.00, Steps=30, Time=109.44s
+Moving from (8, 6) towards (10, 6).
+  [GPU3] Ep1: R=4.00, Steps=30, Time=112.89s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep2: R=0.00, Steps=30, Time=104.96s
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (8, 3) towards (10, 2).
+  [GPU1] Ep2: R=3.00, Steps=30, Time=108.59s
+Moving from (9, 3) towards (10, 2).
+  [GPU0] Ep2: R=3.00, Steps=30, Time=109.34s
+  [GPU3] Ep2: R=3.00, Steps=30, Time=113.51s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep3: R=3.00, Steps=30, Time=105.69s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 3) towards (10, 2).
+  [GPU1] Ep3: R=0.00, Steps=30, Time=108.60s
+  [GPU0] Ep3: R=3.00, Steps=30, Time=108.87s
+Moving from (8, 3) towards (10, 2).
+  [GPU3] Ep3: R=3.00, Steps=30, Time=113.34s
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+  [GPU2] Ep4: R=2.00, Steps=30, Time=105.76s
+Moving from (2, 6) towards (1, 8).
+Moving from (1, 6) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU1] Ep4: R=3.00, Steps=30, Time=108.94s
+  [GPU0] Ep4: R=3.00, Steps=30, Time=108.75s
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep4: R=3.00, Steps=30, Time=113.82s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep5: R=0.00, Steps=30, Time=104.15s
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+Moving from (6, 3) towards (4, 2).
+Moving from (6, 2) towards (4, 2).
+  [GPU1] Ep5: R=3.00, Steps=30, Time=109.56s
+  [GPU0] Ep5: R=3.00, Steps=30, Time=109.42s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (5, 3) towards (3, 2).
+  [GPU3] Ep5: R=4.00, Steps=30, Time=115.02s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep6: R=3.00, Steps=30, Time=105.48s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+  [GPU1] Ep6: R=3.00, Steps=30, Time=109.25s
+  [GPU0] Ep6: R=3.00, Steps=30, Time=109.28s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (7, 3) towards (9, 2).
+Moving from (8, 3) towards (9, 2).
+Moving from (6, 8) towards (1, 8).
+  [GPU3] Ep6: R=3.00, Steps=30, Time=114.39s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+  [GPU2] Ep7: R=0.00, Steps=30, Time=106.17s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 5) towards (5, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 6) towards (3, 7).
+  [GPU1] Ep7: R=3.00, Steps=30, Time=108.70s
+  [GPU0] Ep7: R=3.00, Steps=30, Time=109.04s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep7: R=3.00, Steps=30, Time=113.98s
+  ✓ Collected 32 episodes ([8, 8, 8, 8] per GPU)
+  📝 Logged episode 7 trajectory
+  Reward: 2.62±1.21 [0.00, 4.00], Steps: 30.0
+  Low-level actions (GPU0 sample): up:17% | down:23% | left:21% | right:17% | clean:15% | eat:3% | stay:0%
+
+  Inner Optimization (4 epochs, minibatch=8):
+Training step failed: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.21 GiB is free. Including non-PyTorch memory, this process has 77.03 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.33 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1243, in train
+    loss, clip_fraction, n_samples = self.compute_loss_on_samples(micro_batch, model_device)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 1012, in compute_loss_on_samples
+    new_log_probs = self.compute_batch_sequence_log_prob(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 600, in compute_batch_sequence_log_prob
+    logits = forward_pass()
+             ^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/Research/LLM_MARL/paper/archive/grpo_text_compound.py", line 596, in forward_pass
+    outputs = model(input_ids=batch_input_ids, attention_mask=attention_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 786, in convert_to_fp32
+    return recursively_apply(_convert_to_fp32, tensor, test_type=_is_fp16_bf16_tensor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 118, in recursively_apply
+    {
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 119, in <dictcomp>
+    k: recursively_apply(
+       ^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 126, in recursively_apply
+    return func(data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/utils/operations.py", line 778, in _convert_to_fp32
+    return tensor.float()
+           ^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.67 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.21 GiB is free. Including non-PyTorch memory, this process has 77.03 GiB memory in use. Of the allocated memory 74.09 GiB is allocated by PyTorch, and 1.33 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+[Group 7] Episodes 224-255 (expected)
+Updating old model with current weights...
+  ✓ Old model updated
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 3) towards (9, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU2] Ep0: R=3.00, Steps=30, Time=105.85s
+Moving from (9, 3) towards (9, 5).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).
+  [GPU1] Ep0: R=3.00, Steps=30, Time=108.58s
+  [GPU0] Ep0: R=3.00, Steps=30, Time=109.58s
+  [GPU3] Ep0: R=4.00, Steps=30, Time=115.10s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (2, 3).
+Moving from (2, 3) towards (2, 1).
+  [GPU2] Ep1: R=3.00, Steps=30, Time=105.40s
+  [GPU1] Ep1: R=3.00, Steps=30, Time=108.45s
+  [GPU0] Ep1: R=3.00, Steps=30, Time=109.74s
+Moving from (7, 8) towards (12, 8).
+Moving from (8, 8) towards (12, 8).
+  [GPU3] Ep1: R=0.00, Steps=30, Time=113.10s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+Moving from (7, 5) towards (5, 6).
+Moving from (2, 5) towards (0, 5).
+Moving from (2, 8) towards (2, 5).
+  [GPU2] Ep2: R=3.00, Steps=30, Time=105.16s
+Moving from (2, 7) towards (2, 5).
+  [GPU1] Ep2: R=4.00, Steps=30, Time=108.38s
+  [GPU0] Ep2: R=0.00, Steps=30, Time=109.64s
+Moving from (4, 5) towards (4, 8).
+Moving from (4, 6) towards (4, 8).
+  [GPU3] Ep2: R=2.00, Steps=30, Time=113.81s
+Moving from (6, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+  [GPU2] Ep3: R=0.00, Steps=30, Time=104.40s
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 7) towards (2, 5).
+  [GPU1] Ep3: R=3.00, Steps=30, Time=108.70s
+  [GPU0] Ep3: R=3.00, Steps=30, Time=109.83s
+Moving from (2, 5) towards (5, 5).
+Moving from (8, 5) towards (5, 5).
+Moving from (8, 6) towards (5, 6).
+  [GPU3] Ep3: R=3.00, Steps=30, Time=113.48s
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (4, 8) towards (1, 8).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (5, 5) towards (2, 5).
+Moving from (4, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (4, 5) towards (2, 5).
+Moving from (3, 8) towards (1, 8).
+Moving from (6, 8) towards (1, 8).
+Moving from (2, 8) towards (2, 5).
+Moving from (2, 5) towards (0, 4).
+Moving from (5, 8) towards (1, 8).
+Moving from (2, 7) towards (2, 5).
+Moving from (8, 3) towards (10, 2).
+Moving from (1, 5) towards (0, 4).
+Moving from (4, 8) towards (1, 8).
+  [GPU2] Ep4: R=3.00, Steps=30, Time=105.50s
+Moving from (3, 8) towards (1, 8).
+Moving from (7, 2) towards (4, 2).
+Moving from (3, 5) towards (3, 7).

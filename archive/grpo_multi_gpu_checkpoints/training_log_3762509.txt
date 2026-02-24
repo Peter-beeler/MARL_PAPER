@@ -1,0 +1,204 @@
+2026-02-24 10:12:31.679234: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-02-24 10:12:31.679239: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-02-24 10:12:31.679238: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-02-24 10:12:31.679235: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771945952.132377 1070166 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771945952.132372 1070169 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771945952.132380 1070168 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771945952.132377 1070167 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771945952.318741 1070168 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+E0000 00:00:1771945952.318741 1070166 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+E0000 00:00:1771945952.318747 1070167 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+E0000 00:00:1771945952.318749 1070169 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1771945953.797725 1070166 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797733 1070167 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797765 1070166 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797739 1070168 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797765 1070167 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797734 1070169 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797771 1070166 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797773 1070167 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797773 1070168 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797775 1070166 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797776 1070169 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797777 1070167 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797778 1070168 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797785 1070169 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797787 1070168 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771945953.797789 1070169 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-02-24 10:12:33.961178: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:12:33.961178: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:12:33.961236: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-02-24 10:12:33.961349: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+usage: grpo_text_action.py [-h] [--model_name MODEL_NAME]
+                           [--thinking_tokens THINKING_TOKENS]
+                           [--use_two_stage] [--no_two_stage]
+                           [--logprob_mode {action,action+thinking}]
+                           [--loss_type {grpo,drgrpo}]
+                           [--num_episodes NUM_EPISODES]
+                           [--episodes_per_update EPISODES_PER_UPDATE]
+                           [--episodes_per_gpu EPISODES_PER_GPU]
+                           [--num_agents NUM_AGENTS]
+                           [--max_env_steps MAX_ENV_STEPS]
+                           [--eat_reward EAT_REWARD]
+                           [--clean_reward CLEAN_REWARD]
+                           [--learning_rate LEARNING_RATE]
+                           [--output_dir OUTPUT_DIR] [--device DEVICE]
+                           [--seed SEED] [--use_4bit] [--use_8bit] [--no_lora]
+                           [--use_accelerate]
+                           [--num_inner_epochs NUM_INNER_EPOCHS]
+                           [--minibatch_size MINIBATCH_SIZE]
+                           [--samples_per_micro_batch SAMPLES_PER_MICRO_BATCH]
+                           [--micro_batch_size MICRO_BATCH_SIZE] [--visualize]
+                           [--viz_save_file VIZ_SAVE_FILE] [--viz_use_ref]
+                           [--sanity_check] [--skip_pre_eval]
+                           [--skip_post_eval]
+                           [--num_eval_episodes NUM_EVAL_EPISODES]
+                           [--eval_interval EVAL_INTERVAL] [--log_trajectory]
+                           [--no_log_trajectory]
+                           [--trajectory_log_file TRAJECTORY_LOG_FILE]
+                           [--use_wandb] [--no_wandb]
+                           [--wandb_project WANDB_PROJECT]
+                           [--wandb_entity WANDB_ENTITY]
+                           [--wandb_run_name WANDB_RUN_NAME]
+grpo_text_action.py: error: unrecognized arguments: --action_tokens 128
+usage: grpo_text_action.py [-h] [--model_name MODEL_NAME]
+                           [--thinking_tokens THINKING_TOKENS]
+                           [--use_two_stage] [--no_two_stage]
+                           [--logprob_mode {action,action+thinking}]
+                           [--loss_type {grpo,drgrpo}]
+                           [--num_episodes NUM_EPISODES]
+                           [--episodes_per_update EPISODES_PER_UPDATE]
+                           [--episodes_per_gpu EPISODES_PER_GPU]
+                           [--num_agents NUM_AGENTS]
+                           [--max_env_steps MAX_ENV_STEPS]
+                           [--eat_reward EAT_REWARD]
+                           [--clean_reward CLEAN_REWARD]
+                           [--learning_rate LEARNING_RATE]
+                           [--output_dir OUTPUT_DIR] [--device DEVICE]
+                           [--seed SEED] [--use_4bit] [--use_8bit] [--no_lora]
+                           [--use_accelerate]
+                           [--num_inner_epochs NUM_INNER_EPOCHS]
+                           [--minibatch_size MINIBATCH_SIZE]
+                           [--samples_per_micro_batch SAMPLES_PER_MICRO_BATCH]
+                           [--micro_batch_size MICRO_BATCH_SIZE] [--visualize]
+                           [--viz_save_file VIZ_SAVE_FILE] [--viz_use_ref]
+                           [--sanity_check] [--skip_pre_eval]
+                           [--skip_post_eval]
+                           [--num_eval_episodes NUM_EVAL_EPISODES]
+                           [--eval_interval EVAL_INTERVAL] [--log_trajectory]
+                           [--no_log_trajectory]
+                           [--trajectory_log_file TRAJECTORY_LOG_FILE]
+                           [--use_wandb] [--no_wandb]
+                           [--wandb_project WANDB_PROJECT]
+                           [--wandb_entity WANDB_ENTITY]
+                           [--wandb_run_name WANDB_RUN_NAME]
+grpo_text_action.py: error: unrecognized arguments: --action_tokens 128
+usage: grpo_text_action.py [-h] [--model_name MODEL_NAME]
+                           [--thinking_tokens THINKING_TOKENS]
+                           [--use_two_stage] [--no_two_stage]
+                           [--logprob_mode {action,action+thinking}]
+                           [--loss_type {grpo,drgrpo}]
+                           [--num_episodes NUM_EPISODES]
+                           [--episodes_per_update EPISODES_PER_UPDATE]
+                           [--episodes_per_gpu EPISODES_PER_GPU]
+                           [--num_agents NUM_AGENTS]
+                           [--max_env_steps MAX_ENV_STEPS]
+                           [--eat_reward EAT_REWARD]
+                           [--clean_reward CLEAN_REWARD]
+                           [--learning_rate LEARNING_RATE]
+                           [--output_dir OUTPUT_DIR] [--device DEVICE]
+                           [--seed SEED] [--use_4bit] [--use_8bit] [--no_lora]
+                           [--use_accelerate]
+                           [--num_inner_epochs NUM_INNER_EPOCHS]
+                           [--minibatch_size MINIBATCH_SIZE]
+                           [--samples_per_micro_batch SAMPLES_PER_MICRO_BATCH]
+                           [--micro_batch_size MICRO_BATCH_SIZE] [--visualize]
+                           [--viz_save_file VIZ_SAVE_FILE] [--viz_use_ref]
+                           [--sanity_check] [--skip_pre_eval]
+                           [--skip_post_eval]
+                           [--num_eval_episodes NUM_EVAL_EPISODES]
+                           [--eval_interval EVAL_INTERVAL] [--log_trajectory]
+                           [--no_log_trajectory]
+                           [--trajectory_log_file TRAJECTORY_LOG_FILE]
+                           [--use_wandb] [--no_wandb]
+                           [--wandb_project WANDB_PROJECT]
+                           [--wandb_entity WANDB_ENTITY]
+                           [--wandb_run_name WANDB_RUN_NAME]
+grpo_text_action.py: error: unrecognized arguments: --action_tokens 128
+usage: grpo_text_action.py [-h] [--model_name MODEL_NAME]
+                           [--thinking_tokens THINKING_TOKENS]
+                           [--use_two_stage] [--no_two_stage]
+                           [--logprob_mode {action,action+thinking}]
+                           [--loss_type {grpo,drgrpo}]
+                           [--num_episodes NUM_EPISODES]
+                           [--episodes_per_update EPISODES_PER_UPDATE]
+                           [--episodes_per_gpu EPISODES_PER_GPU]
+                           [--num_agents NUM_AGENTS]
+                           [--max_env_steps MAX_ENV_STEPS]
+                           [--eat_reward EAT_REWARD]
+                           [--clean_reward CLEAN_REWARD]
+                           [--learning_rate LEARNING_RATE]
+                           [--output_dir OUTPUT_DIR] [--device DEVICE]
+                           [--seed SEED] [--use_4bit] [--use_8bit] [--no_lora]
+                           [--use_accelerate]
+                           [--num_inner_epochs NUM_INNER_EPOCHS]
+                           [--minibatch_size MINIBATCH_SIZE]
+                           [--samples_per_micro_batch SAMPLES_PER_MICRO_BATCH]
+                           [--micro_batch_size MICRO_BATCH_SIZE] [--visualize]
+                           [--viz_save_file VIZ_SAVE_FILE] [--viz_use_ref]
+                           [--sanity_check] [--skip_pre_eval]
+                           [--skip_post_eval]
+                           [--num_eval_episodes NUM_EVAL_EPISODES]
+                           [--eval_interval EVAL_INTERVAL] [--log_trajectory]
+                           [--no_log_trajectory]
+                           [--trajectory_log_file TRAJECTORY_LOG_FILE]
+                           [--use_wandb] [--no_wandb]
+                           [--wandb_project WANDB_PROJECT]
+                           [--wandb_entity WANDB_ENTITY]
+                           [--wandb_run_name WANDB_RUN_NAME]
+grpo_text_action.py: error: unrecognized arguments: --action_tokens 128
+W0224 10:13:00.001000 1069906 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1070166 closing signal SIGTERM
+W0224 10:13:00.002000 1069906 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1070168 closing signal SIGTERM
+E0224 10:13:00.066000 1069906 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 2) local_rank: 1 (pid: 1070167) of binary: /users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/bin/python
+Traceback (most recent call last):
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/accelerate_cli.py", line 48, in main
+    args.func(args)
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/launch.py", line 1185, in launch_command
+    multi_gpu_launcher(args)
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/launch.py", line 810, in multi_gpu_launcher
+    distrib_run.run(args)
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/users/PAS2056/mypeter8219/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+grpo_text_action.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-02-24_10:13:00
+  host      : a0024.ten.osc.edu
+  rank      : 1 (local_rank: 1)
+  exitcode  : 2 (pid: 1070167)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

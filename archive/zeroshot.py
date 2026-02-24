@@ -26,7 +26,7 @@ import prompt_template
 # ---------------------------------------------------------------------------
 MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
 NUM_EVAL_EPISODES = 20
-MAX_ENV_STEPS = 20
+MAX_ENV_STEPS = 50
 NUM_AGENTS = 3
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SEED = 42

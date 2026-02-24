@@ -4,7 +4,7 @@
 #SBATCH --time=100:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=4
+#SBATCH --gpus-per-node=2
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128GB
 #SBATCH --partition=quad
@@ -57,10 +57,10 @@ fi
 # Model and training configuration
 MODEL_NAME="Qwen/Qwen3-4B-Instruct-2507"
 # MODEL_NAME="Qwen/Qwen3-4B-Base"
-EPISODES_PER_GPU=2 # Each GPU will collect this many episodes per group
-TOTAL_EPISODES=1024
-MAX_ENV_STEPS=10
-NUM_AGENTS=1
+EPISODES_PER_GPU=8 # Each GPU will collect this many episodes per group
+TOTAL_EPISODES=2048
+MAX_ENV_STEPS=30
+NUM_AGENTS=3
 LEARNING_RATE=1e-6
 THINKING_TOKENS=256
 ACTION_TOKENS=128
@@ -69,21 +69,21 @@ LOGPROB_MODE="action"  # "action" (only action tokens) or "action+thinking" (bot
 # Inner epoch optimization (PPO-style)
 NUM_INNER_EPOCHS=4         # Number of optimization epochs per group
 MINIBATCH_SIZE=8           # Number of trajectories per mini-batch
-SAMPLES_PER_MICRO_BATCH=10  # Number of (prompt, action) samples per micro-batch for gradient accumulation
+SAMPLES_PER_MICRO_BATCH=3  # Number of (prompt, action) samples per micro-batch for gradient accumulation
                            # Adjust based on GPU memory: 1-2 for A100, increase if memory allows
 
 EAT_REWARD=1.0           # Reward for eating an apple (default: 1.0)
-CLEAN_REWARD=0.2         # Reward for cleaning a dirt tile (0.0 = disabled, e.g. 0.1 to ease cold start)
+CLEAN_REWARD=0.2        # Reward for cleaning a dirt tile (0.0 = disabled, e.g. 0.1 to ease cold start)
 
 OUTPUT_DIR="./grpo_multi_gpu_checkpoints"
-NUM_EVAL_EPISODES=8
+NUM_EVAL_EPISODES=10
 
 # Wandb configuration
 # Note: Make sure you have logged in with 'wandb login' before running this script
 USE_WANDB=true  # Set to false to disable wandb logging
 WANDB_PROJECT="grpo"  # Wandb project name
 WANDB_ENTITY=""  # Your wandb username/team (leave empty for default)
-WANDB_RUN_NAME=""  # Run name (leave empty for auto-generated)
+WANDB_RUN_NAME="compound_run_clean0.2"  # Run name (leave empty for auto-generated)
 
 echo "Configuration:"
 echo "  Model: $MODEL_NAME"
@@ -156,7 +156,6 @@ accelerate launch \
     --loss_type "drgrpo" \
     --eat_reward $EAT_REWARD \
     --clean_reward $CLEAN_REWARD \
-    --skip_pre_eval \
     $WANDB_ARGS \
     2>&1 | tee "$OUTPUT_DIR/training_log_${SLURM_JOB_ID}.txt"
 
