@@ -1,0 +1,191 @@
+[2026-02-24 17:35:19,210] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-02-24 17:35:21,336] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[2026-02-24 17:35:31,062] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-02-24 17:35:31,062] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-02-24 17:35:31,065] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-02-24 17:35:31,066] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-02-24 17:35:32,535] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[2026-02-24 17:35:32,544] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[2026-02-24 17:35:32,568] [INFO] [comm.py:675:init_distributed] cdb=None
+[2026-02-24 17:35:32,568] [INFO] [comm.py:706:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[2026-02-24 17:35:32,576] [INFO] [comm.py:675:init_distributed] cdb=None
+[2026-02-24 17:35:32,577] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[2026-02-24 17:35:32,582] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[2026-02-24 17:35:32,608] [INFO] [comm.py:675:init_distributed] cdb=None
+[2026-02-24 17:35:32,613] [INFO] [comm.py:675:init_distributed] cdb=None
+Using DeepSpeed ZeRO-3 (optimizer CPU-offload) with 4 GPUs
+Detected kernel version 5.4.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+Using DeepSpeed ZeRO-3 (optimizer CPU-offload) with 4 GPUs
+Loading model: Qwen/Qwen2.5-0.5B
+Action mode: compound
+Using DeepSpeed ZeRO-3 (optimizer CPU-offload) with 4 GPUs
+Using DeepSpeed ZeRO-3 (optimizer CPU-offload) with 4 GPUs
+Helper functions: ['move_to', 'clean_at', 'eat_at', 'random_explore']
+Max new tokens: 384 (thinking=256 + action=128)
+Detected kernel version 5.4.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+[2026-02-24 17:35:33,669] [INFO] [config.py:655:__init__] Config mesh_device None world_size = 4
+[2026-02-24 17:35:33,682] [INFO] [config.py:655:__init__] Config mesh_device None world_size = 4
+[2026-02-24 17:35:33,693] [INFO] [config.py:655:__init__] Config mesh_device None world_size = 4
+[2026-02-24 17:35:33,709] [INFO] [config.py:655:__init__] Config mesh_device None world_size = 4
+NCCL version 2.21.5+cuda12.4
+Fatal Python error: Segmentation fault
+
+Thread 0x00007f77ad36c700 (most recent call first):
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 53 in _recv_msg
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 161 in _read_thread
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 982 in run
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 1002 in _bootstrap
+
+Thread 0x00007f78b978f180 (most recent call first):
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", line 2726 in broadcast
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/c10d_logger.py", line 81 in wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/torch.py", line 206 in broadcast
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py", line 224 in broadcast
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py", line 117 in log_wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 1098 in _zero_init_param
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 1143 in _post_init_method
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 533 in wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 333 in __init__
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 523 in wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 473 in __init__
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 523 in wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py", line 4760 in from_pretrained
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py", line 311 in _wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/auto/auto_factory.py", line 600 in from_pretrained
+  File "/home/mao.496/Projects/MARL_PAPER/utils/model_setup.py", line 150 in load_base_model
+  File "/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 109 in __init__
+  File "/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 723 in main
+  File "/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 756 in <module>
+
+Extension modules: numpy._core._multiarray_umath, numpy.linalg._umath_linalg, torch._C, torch._C._dynamo.autograd_compiler, torch._C._dynamo.eval_frame, torch._C._dynamo.guards, torch._C._dynamo.utils, torch._C._fft, torch._C._linalg, torch._C._nested, torch._C._nn, torch._C._sparse, torch._C._special, google._upb._message, yaml._yaml, charset_normalizer.md, requests.packages.charset_normalizer.md, requests.packages.chardet.md, psutil._psutil_linux, psutil._psutil_posix, regex._regex, markupsafe._speedups, PIL._imaging, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, scipy._lib._ccallback_c, scipy.linalg._fblas, scipy.linalg._flapack, scipy.linalg.cython_lapack, scipy.linalg._cythonized_array_utils, scipy.linalg._solve_toeplitz, scipy.linalg._decomp_lu_cython, scipy.linalg._matfuncs_sqrtm_triu, scipy.linalg._matfuncs_expm, scipy.linalg._linalg_pythran, scipy.linalg.cython_blas, scipy.linalg._decomp_update, scipy.sparse._sparsetools, _csparsetools, scipy.sparse._csparsetools, scipy.sparse.linalg._dsolve._superlu, scipy.sparse.linalg._eigen.arpack._arpack, scipy.sparse.linalg._propack._spropack, scipy.sparse.linalg._propack._dpropack, scipy.sparse.linalg._propack._cpropack, scipy.sparse.linalg._propack._zpropack, scipy.sparse.csgraph._tools, scipy.sparse.csgraph._shortest_path, scipy.sparse.csgraph._traversal, scipy.sparse.csgraph._min_spanning_tree, scipy.sparse.csgraph._flow, scipy.sparse.csgraph._matching, scipy.sparse.csgraph._reordering, scipy.optimize._group_columns, scipy._lib.messagestream, scipy.optimize._trlib._trlib, scipy.optimize._lbfgsb, _moduleTNC, scipy.optimize._moduleTNC, scipy.optimize._cobyla, scipy.optimize._slsqp, scipy.optimize._minpack, scipy.optimize._lsq.givens_elimination, scipy.optimize._zeros, scipy.optimize._cython_nnls, scipy._lib._uarray._uarray, scipy.special._ufuncs_cxx, scipy.special._ufuncs, scipy.special._specfun, scipy.special._comb, scipy.special._ellip_harm_2, scipy.linalg._decomp_interpolative, scipy.optimize._bglu_denseFatal Python error: , scipy.optimize._lsapSegmentation fault
+
+Fatal Python error: , Thread 0xscipy.spatial._ckdtreeSegmentation fault00007f7a7ad13700
+
+ (most recent call first):
+Thread 0x  File , 00007f9d65dcd700scipy.spatial._qhull" (most recent call first):
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py"  File , , line "scipy.spatial._voronoi53/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py in ", _recv_msg, line scipy.spatial._distance_wrap
+53 in   File _recv_msg", 
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.pyscipy.spatial._hausdorff  File "", line , 161/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py in "scipy.spatial.transform._rotation, line _read_thread161
+,  in   File scipy.optimize._direct_read_thread"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py
+"  File , line "982/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py,  in "PIL._imagingftrun, line 
+982  File  in "run
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py  File "", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py1045" in , , line lz4._version1045_bootstrap_inner
+ in   File _bootstrap_inner", 
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.pylz4.frame._frame  File ""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py, line "1002 in , line _bootstrap1002
+ in 
+_bootstrapThread 0x
+00007f7b9939f180
+ (most recent call first):
+Thread 0x00007f9e84458180,   File  (most recent call first):
+cuda_utils"  File /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py, line "2726, line  in 2726broadcast in 
+  File broadcast
+"  File /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/c10d_logger.py"", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/c10d_logger.py81 in "wrapper, line 
+81  File  in "wrapper
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/torch.py,   File "msgpack._cmsgpack", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/torch.py"206, line  in 206broadcast in 
+broadcast  File 
+"  File  (total: /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py"93"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py), line "224
+, line  in 224broadcast in 
+broadcast  File 
+"  File /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py", line 117, line  in 117log_wrapper in 
+  File log_wrapper"
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py  File ""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py, line "1098, line  in 1098_zero_init_param in 
+_zero_init_param  File 
+"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py  File "", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py1143" in , line _post_init_method1143
+ in   File _post_init_method"
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py  File ""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py, line "533, line  in 533wrapper in 
+wrapper  File 
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 333, line  in 333__init__ in 
+__init__  File 
+"  File /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py, line "523, line  in 523wrapper in 
+wrapper  File 
+"  File /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py, line "473 in , line __init__473
+ in   File __init__"
+/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py  File "", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py523", line  in 523wrapper in wrapper
+
+  File   File ""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py"", line 4760 in from_pretrained
+  File ", line /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py"4760, line  in 311 in from_pretrained_wrapper
+
+  File   File ""/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/auto/auto_factory.py"", line 311 in _wrapper
+, line   File 600 in "from_pretrained/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/auto/auto_factory.py
+"  File "/home/mao.496/Projects/MARL_PAPER/utils/model_setup.py", line , line 600150 in  in from_pretrainedload_base_model
+
+  File   File ""/home/mao.496/Projects/MARL_PAPER/utils/model_setup.py/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py"", line 150 in , line load_base_model109
+ in   File __init__
+"  File /home/mao.496/Projects/MARL_PAPER/grpo_textgame.py""/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 109, line  in 723__init__ in 
+  File main"
+/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py  File ""/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 723 in , line main756
+ in   File <module>"
+/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py", line 756 in <module>
+
+Extension modules: numpy._core._multiarray_umath, numpy.linalg._umath_linalg
+Extension modules: , numpy._core._multiarray_umathtorch._C, torch._C._dynamo.autograd_compiler, torch._C._dynamo.eval_frame, numpy.linalg._umath_linalg, torch._C._dynamo.guards, torch._C._dynamo.utils, torch._C, torch._C._fft, torch._C._dynamo.autograd_compiler, torch._C._linalg, , torch._C._dynamo.eval_frametorch._C._nested, , torch._C._dynamo.guardstorch._C._nn, , torch._C._dynamo.utilstorch._C._sparse, , torch._C._ffttorch._C._special, torch._C._linalgFatal Python error: , Segmentation faulttorch._C._nested
+
+Thread 0x, torch._C._nn00007f4a07cf3700 (most recent call first):
+  File , torch._C._sparse"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py, "torch._C._special, line 53 in _recv_msg
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 161 in _read_thread
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 982 in run
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 1045 in _bootstrap_inner
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/threading.py", line 1002 in _bootstrap
+
+Thread 0x, 00007f4b2627a180google._upb._message (most recent call first):
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", , line yaml._yaml2726 in broadcast
+  File , "google._upb._message, /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/c10d_logger.pycharset_normalizer.md", line 81 in , wrapper, yaml._yaml
+requests.packages.charset_normalizer.md  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/torch.py, requests.packages.chardet.md, "charset_normalizer.md, line 206 in broadcast
+  File ", /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.pyrequests.packages.charset_normalizer.md", line 224,  in requests.packages.chardet.mdbroadcast
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/comm/comm.py", line 117 in log_wrapper, 
+psutil._psutil_linux  File ", /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.pypsutil._psutil_posix", line 1098 in _zero_init_param
+  File ", /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.pypsutil._psutil_linux, "regex._regex, line , psutil._psutil_posix1143,  in markupsafe._speedups_post_init_method
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py, "PIL._imaging, regex._regex, line 533 in wrapper
+,   File markupsafe._speedups"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.py", line , 333PIL._imaging in __init__
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py", line 523 in wrapper
+  File ", /home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/qwen2/modeling_qwen2.pynumpy.random._common", line 473,  in numpy.random.bit_generator__init__
+,   File numpy.random._bounded_integers"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/deepspeed/runtime/zero/partition_parameters.py, , "numpy.random._commonnumpy.random._mt19937, line 523, ,  in numpy.random.bit_generatornumpy.random.mtrandwrapper
+  File , , "numpy.random._bounded_integersnumpy.random._philox/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py", , numpy.random._pcg64numpy.random._mt19937, , numpy.random._sfc64numpy.random.mtrand, , numpy.random._generatornumpy.random._philox, line 4760,  in numpy.random._pcg64from_pretrained
+  File , numpy.random._sfc64"/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/modeling_utils.py", , line numpy.random._generator311 in _wrapper
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/transformers/models/auto/auto_factory.py, "scipy._lib._ccallback_c, scipy.linalg._fblas, line 600, scipy.linalg._flapack in from_pretrained
+,   File scipy.linalg.cython_lapack, "scipy._lib._ccallback_c/home/mao.496/Projects/MARL_PAPER/utils/model_setup.py, scipy.linalg._cythonized_array_utils", scipy.linalg._fblas, line 150, ,  in scipy.linalg._flapackscipy.linalg._solve_toeplitzload_base_model
+  File , , scipy.linalg._decomp_lu_cython"scipy.linalg.cython_lapack/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py, ", scipy.linalg._matfuncs_sqrtm_triuscipy.linalg._cythonized_array_utils, line 109,  in scipy.linalg._matfuncs_expm__init__, 
+scipy.linalg._solve_toeplitz,   File scipy.linalg._linalg_pythran"/home/mao.496/Projects/MARL_PAPER/grpo_textgame.py, , "scipy.linalg.cython_blasscipy.linalg._decomp_lu_cython, , line , scipy.linalg._decomp_updatescipy.linalg._matfuncs_sqrtm_triu723, ,  in scipy.sparse._sparsetoolsscipy.linalg._matfuncs_expmmain
+, , scipy.linalg._linalg_pythran_csparsetools  File ", , /home/mao.496/Projects/MARL_PAPER/grpo_textgame.pyscipy.sparse._csparsetoolsscipy.linalg.cython_blas", , scipy.sparse.linalg._dsolve._superlu, line scipy.linalg._decomp_update, 756scipy.sparse.linalg._eigen.arpack._arpack,  in scipy.sparse._sparsetools, <module>scipy.sparse.linalg._propack._spropack
+, scipy.sparse.linalg._propack._dpropack, _csparsetools, scipy.sparse.linalg._propack._cpropack, , scipy.sparse._csparsetoolsscipy.sparse.linalg._propack._zpropack, scipy.sparse.csgraph._tools, scipy.sparse.linalg._dsolve._superlu, scipy.sparse.csgraph._shortest_path, scipy.sparse.csgraph._traversal, scipy.sparse.linalg._eigen.arpack._arpack, scipy.sparse.csgraph._min_spanning_tree, , scipy.sparse.csgraph._flowscipy.sparse.linalg._propack._spropack, , scipy.sparse.csgraph._matchingscipy.sparse.linalg._propack._dpropack, scipy.sparse.csgraph._reordering, scipy.sparse.linalg._propack._cpropack, , scipy.optimize._group_columnsscipy.sparse.linalg._propack._zpropack, , scipy._lib.messagestreamscipy.sparse.csgraph._tools, , scipy.optimize._trlib._trlibscipy.sparse.csgraph._shortest_path, , scipy.sparse.csgraph._traversalscipy.optimize._lbfgsb, scipy.sparse.csgraph._min_spanning_tree, _moduleTNC, , scipy.sparse.csgraph._flowscipy.optimize._moduleTNC, , scipy.sparse.csgraph._matchingscipy.optimize._cobyla, , scipy.optimize._slsqpscipy.sparse.csgraph._reordering, scipy.optimize._minpack, scipy.optimize._group_columns, scipy.optimize._lsq.givens_elimination, scipy._lib.messagestream, scipy.optimize._zeros, scipy.optimize._trlib._trlib, scipy.optimize._cython_nnls, scipy.optimize._lbfgsb, scipy._lib._uarray._uarray, _moduleTNC, scipy.special._ufuncs_cxx, scipy.optimize._moduleTNC, scipy.special._ufuncs, scipy.optimize._cobyla, scipy.special._specfun, scipy.optimize._slsqp, scipy.special._comb, scipy.optimize._minpack, scipy.special._ellip_harm_2, scipy.optimize._lsq.givens_elimination, , scipy.optimize._zerosscipy.linalg._decomp_interpolative, , scipy.optimize._cython_nnlsscipy.optimize._bglu_dense, , scipy.optimize._lsapscipy._lib._uarray._uarray, , scipy.spatial._ckdtreescipy.special._ufuncs_cxx, , scipy.special._ufuncsscipy.spatial._qhull, , scipy.special._specfunscipy.spatial._voronoi
+Extension modules: numpy._core._multiarray_umath, , scipy.special._combscipy.spatial._distance_wrap, , scipy.spatial._hausdorffscipy.special._ellip_harm_2, , scipy.spatial.transform._rotationscipy.linalg._decomp_interpolative, , , numpy.linalg._umath_linalgscipy.optimize._directscipy.optimize._bglu_dense, scipy.optimize._lsap, PIL._imagingft, scipy.spatial._ckdtree, scipy.spatial._qhull, torch._C, scipy.spatial._voronoi, scipy.spatial._distance_wrap, , torch._C._dynamo.autograd_compilerscipy.spatial._hausdorff, lz4._version, scipy.spatial.transform._rotation, , lz4.frame._frametorch._C._dynamo.eval_frame, scipy.optimize._direct, , PIL._imagingfttorch._C._dynamo.guards, , cuda_utilstorch._C._dynamo.utils, , lz4._versiontorch._C._fft, lz4.frame._frame, torch._C._linalg, torch._C._nested, cuda_utils, , msgpack._cmsgpacktorch._C._nn, torch._C._sparse (total: , 93)torch._C._special
+, msgpack._cmsgpack (total: 93)
+, google._upb._message, yaml._yaml, charset_normalizer.md, requests.packages.charset_normalizer.md, requests.packages.chardet.md, psutil._psutil_linux, psutil._psutil_posix, regex._regex, markupsafe._speedups, PIL._imaging, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._mt19937, numpy.random.mtrand, numpy.random._philox, numpy.random._pcg64, numpy.random._sfc64, numpy.random._generator, scipy._lib._ccallback_c, scipy.linalg._fblas, scipy.linalg._flapack, scipy.linalg.cython_lapack, scipy.linalg._cythonized_array_utils, scipy.linalg._solve_toeplitz, scipy.linalg._decomp_lu_cython, scipy.linalg._matfuncs_sqrtm_triu, scipy.linalg._matfuncs_expm, scipy.linalg._linalg_pythran, scipy.linalg.cython_blas, scipy.linalg._decomp_update, scipy.sparse._sparsetools, _csparsetools, scipy.sparse._csparsetools, scipy.sparse.linalg._dsolve._superlu, scipy.sparse.linalg._eigen.arpack._arpack, scipy.sparse.linalg._propack._spropack, scipy.sparse.linalg._propack._dpropack, scipy.sparse.linalg._propack._cpropack, scipy.sparse.linalg._propack._zpropack, scipy.sparse.csgraph._tools, scipy.sparse.csgraph._shortest_path, scipy.sparse.csgraph._traversal, scipy.sparse.csgraph._min_spanning_tree, scipy.sparse.csgraph._flow, scipy.sparse.csgraph._matching, scipy.sparse.csgraph._reordering, scipy.optimize._group_columns, scipy._lib.messagestream, scipy.optimize._trlib._trlib, scipy.optimize._lbfgsb, _moduleTNC, scipy.optimize._moduleTNC, scipy.optimize._cobyla, scipy.optimize._slsqp, scipy.optimize._minpack, scipy.optimize._lsq.givens_elimination, scipy.optimize._zeros, scipy.optimize._cython_nnls, scipy._lib._uarray._uarray, scipy.special._ufuncs_cxx, scipy.special._ufuncs, scipy.special._specfun, scipy.special._comb, scipy.special._ellip_harm_2, scipy.linalg._decomp_interpolative, scipy.optimize._bglu_dense, scipy.optimize._lsap, scipy.spatial._ckdtree, scipy.spatial._qhull, scipy.spatial._voronoi, scipy.spatial._distance_wrap, scipy.spatial._hausdorff, scipy.spatial.transform._rotation, scipy.optimize._direct, PIL._imagingft, lz4._version, lz4.frame._frame, cuda_utils, msgpack._cmsgpack (total: 93)
+W0224 17:35:34.130000 1195586 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1195672 closing signal SIGTERM
+W0224 17:35:34.131000 1195586 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1195673 closing signal SIGTERM
+W0224 17:35:34.131000 1195586 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1195674 closing signal SIGTERM
+E0224 17:35:34.170000 1195586 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: -11) local_rank: 0 (pid: 1195671) of binary: python
+Traceback (most recent call last):
+  File "/home/mao.496/miniconda3/envs/py311LLM/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/accelerate_cli.py", line 48, in main
+    args.func(args)
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/launch.py", line 1177, in launch_command
+    deepspeed_launcher(args)
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/accelerate/commands/launch.py", line 863, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mao.496/miniconda3/envs/py311LLM/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+=========================================================
+python FAILED
+---------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+---------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-02-24_17:35:34
+  host      : cse-cnc196859d.coeit.osu.edu
+  rank      : 0 (local_rank: 0)
+  exitcode  : -11 (pid: 1195671)
+  error_file: <N/A>
+  traceback : Signal 11 (SIGSEGV) received by PID 1195671
+=========================================================
