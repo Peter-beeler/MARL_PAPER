@@ -72,25 +72,27 @@ def setup_accelerator(config: GRPOConfig):
 
         if getattr(config, 'use_deepspeed', False):
             from accelerate.utils import DeepSpeedPlugin
-            # ZeRO-3: shard params + gradients across all GPUs.
-            # Optimizer states are CPU-offloaded (~8 GB/GPU saved on 4B model).
+            # ZeRO-2: shard gradients + optimizer states across all GPUs.
+            # No CPU offloading — optimizer runs entirely on GPU.
             # gradient_clipping is configured here so we must NOT call
             # accelerator.clip_grad_norm_() in the training loop.
             ds_plugin = DeepSpeedPlugin(
-                zero_stage=3,
+                zero_stage=2,
                 gradient_accumulation_steps=1,
                 gradient_clipping=config.max_grad_norm,
-                offload_optimizer_device="cpu",
-                zero3_init_flag=True,        # partition params during from_pretrained
-                zero3_save_16bit_model=True, # gather all shards when saving
+                offload_optimizer_device="none",
             )
+            # DeepSpeed requires train_micro_batch_size_per_gpu even when
+            # no dataloader is passed to accelerator.prepare() (GRPO uses
+            # environment rollouts, not a standard dataloader).
+            ds_plugin.deepspeed_config["train_micro_batch_size_per_gpu"] = 1
             accelerator = Accelerator(
                 mixed_precision="bf16",
                 deepspeed_plugin=ds_plugin,
                 kwargs_handlers=[timeout_kwargs],
             )
             logger.info(
-                f"Using DeepSpeed ZeRO-3 (optimizer CPU-offload) "
+                f"Using DeepSpeed ZeRO-2 (no CPU offload) "
                 f"with {accelerator.num_processes} GPUs"
             )
         else:

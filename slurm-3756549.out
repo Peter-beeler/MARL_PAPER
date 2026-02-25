@@ -45195,3 +45195,171 @@ Agent 2 (Low-Level):
   Thinking: At (2,6), you see nothing. Since there are no visible apples or dirt, you cannot eat or clean immediately. To enable apple spawning, you must first clean dirt — but without knowing if there's dirt nearby, you can't act.
 
 **Action: stay**  
+But I don't see any apples mentioned, and I can
+  Decision: 'right' -> Env Action: 'right'
+Agent 2 (Low-Level):
+  Obs: You at (7,5). Dirt at (6,6), (7,4).
+  Thinking: At (7,5), you can see dirt at (6,6) and (7,4). Since you can only clean dirt *at your position*, and you're not on either of those dirt cells, you cannot clean them directly.
+
+- To clean dirt, you must move to a cell with dirt and then use the "clean" action.
+- Eating apples requires being on a cell with an apple, which only spawns when the river is clean (i.e., less dirt).
+
+Currently, there are no apples visible, and you're not on any dirt cells. So:
+
+✅ Best action: Move to a dirt cell to clean it.  
+- (7,4) is adjacent (down one). Move **down** to (7,4), then clean.  
+- This reduces dirt, potentially enabling apple spawning later.
+
+**Action: down** → then clean (after moving).  
+
+→ Reason: Cleaning dirt is necessary to enable apples. You cannot eat apples now, but cleaning is required to enable future apple spawns. Prioritize cleaning.
+  Decision: 'down' -> Env Action: 'down'
+Agent 3 (Low-Level):
+  Obs: You at (7,0). Agent 1 at (8,1).
+  Thinking: At (7,0), I am on land. I need to assess whether there's an apple to eat or if I need to clean dirt first.
+
+- Apples only spawn on land when the river is clean (i.e., less dirt).  
+- Cleaning dirt gives no points but is necessary to enable apple spawning.  
+- I can only act on the cell I'm currently on.
+
+Currently, I am at (7,0). Agent 1 is at (8,1), which may imply activity nearby, but unless there's dirt or an apple at (7,0), I can't act.
+
+Since no dirt or apple is mentioned, and I’m not told the current state of dirt at (7,0), I assume:  
+→ If there’s dirt at (7,0), I must clean it to possibly spawn apples.  
+→ If there’s already an apple, I can eat it.
+
+But no info on dirt or apple at (7,0).
+
+**Best action**: *stay* — to monitor the situation. If there’s dirt, I can clean it later. If there’s an apple, I can eat it now. Without more info, I shouldn’t act prematurely.
+
+**Answer**: stay.
+  Decision: 'stay' -> Env Action: 'stay'
+Step Results: Rewards={1: 0.0, 2: 0.0, 3: 0.0} | Dirts Cleaned This Step: 10
+*a****###*****a
+***a**##x******
+******#xx*****a
+******xxx******
+******x2x******
+******#x#******
+******#x#****a*
+******xxx1*****
+a*****x3x******
+
+--- Step 49 ---
+Agent 1 (Low-Level):
+  Obs: You at (9,1). Dirt at (8,2). Agent 3 at (7,0).
+  Thinking: At (9,1), there is no apple visible, and the only dirt is at (8,2), which is not adjacent to your position. You cannot clean dirt at (8,2) unless you move there. Since you can only clean dirt on your current cell, and there's no dirt at (9,1), you cannot clean anything now.
+
+Apples only spawn when the river is clean — but we don’t have information about the river or apple spawn conditions beyond dirt presence. Since dirt is not at your position, no apple can be eaten.
+
+Best action: **move left to (8,1)** to get closer to the dirt at (8,2), so you can eventually clean it and possibly enable apple spawning.
+
+**Action: left**.
+  Decision: 'left' -> Env Action: 'left'
+Agent 2 (Low-Level):
+  Obs: You at (7,4). Dirt at (7,4), (6,3), (8,3).
+  Thinking: At (7,4), there is dirt on your cell.  
+
+Actions available:  
+- **Clean**: You can clean the dirt at (7,4) — this will remove dirt from your cell.  
+- **Eat**: There is no apple at (7,4) currently (only dirt).  
+
+**Reasoning**:  
+Cleaning dirt gives no points directly, but it's essential because apples only spawn on land when the river is clean (i.e., when dirt is removed). Since apples spawn only on clean land, cleaning (7,4) will make it a clean cell, which may allow apples to spawn in the future.  
+
+Currently, there are no apples to eat.  
+
+**Best action**: **clean**  
+→ This enables future apple spawning on land.  
+
+**Next step**: After cleaning (7,4), check if apples appear or if you can move to other dirt cells (e.g., (6,3) or (8,3)) to clean them.  
+
+**Final action: clean** ✅
+  Decision: 'clean' -> Env Action: 'clean'
+Agent 3 (Low-Level):
+  Obs: You at (7,0). Agent 1 at (9,1).
+  Thinking: At (7,0), I am not on a cell with an apple (no apple visible), and there's no indication of dirt to clean. Agent 1 is at (9,1), which is off my current position and likely not relevant unless there's a threat or interaction rule (none stated).  
+
+Since apples only spawn when the river is clean (i.e., dirt is cleaned), and cleaning dirt gives no points, I must first consider whether there's dirt to clean at my current position. There's no mention of dirt at (7,0).  
+
+No apple is present, so I cannot eat.  
+
+Best action: **stay** — to assess surroundings or wait for dirt to appear. If dirt appears later, I can clean it to enable apple spawning.  
+
+**Action: stay**.
+  Decision: 'stay' -> Env Action: 'stay'
+Step Results: Rewards={1: 0.0, 2: 0.0, 3: 0.0} | Dirts Cleaned This Step: 11
+*a****###*****a
+***a**##x******
+******#xx*****a
+******xxx******
+******x2x******
+******#x#******
+******#x#****a*
+******xx1******
+a*****x3x******
+
+--- Step 50 ---
+Agent 1 (Low-Level):
+  Obs: You at (8,1). Dirt at (6,2), (8,2). Agent 3 at (7,0).
+  Thinking: At (8,1), you see dirt at (6,2) and (8,2). You cannot clean dirt unless you are on the same cell. You are not on (6,2) or (8,2), so you cannot clean them directly.
+
+Apples only spawn when the river is clean — meaning dirt must be cleaned. Since you can't clean the dirt at (6,2) or (8,2) from (8,1), no apples are currently spawning.
+
+You can only eat apples if you are on a cell with an apple. There's no indication of apples present.
+
+Best action: **move to (8,2)** — you are adjacent to that dirt, and if you clean it, it will contribute to a cleaner river, possibly enabling apple spawning later. Cleaning dirt gives no points, but it's necessary.
+
+→ **Action: right** (to move to (8,2))  
+Then, once there, **clean** if possible.
+
+Final reasoning: Move to (8,2) to clean dirt and enable future apple spawning. No point in eating now — no apples visible. Cleaning is necessary for apple generation.  
+
+**Action: right**
+  Decision: 'right' -> Env Action: 'right'
+Agent 2 (Low-Level):
+  Obs: You at (7,4). Dirt at (6,3), (8,3).
+  Thinking: At (7,4), you are not on any dirt, so you cannot clean. Dirt is at (6,3) and (8,3) — both are off-grid from your position. Therefore, you cannot clean dirt right now.  
+
+Apples only spawn when the river is clean, but since you can't clean the dirt at (6,3) or (8,3) from (7,4), no apples are currently spawning.  
+
+**Action: stay**  
+No benefit in moving — you can't clean or eat. Staying is safe and doesn't lose points.  
+
+✅ Reasoning: No apples available, no dirt to clean at current position. Stay to avoid wasted movement.  
+
+**Final action: stay**
+  Decision: 'stay' -> Env Action: 'stay'
+Agent 3 (Low-Level):
+  Obs: You at (7,0). Agent 1 at (8,1).
+  Thinking: At (7,0), I am not on a cell with an apple (no apple spawn mentioned), and there's no indication of dirt to clean. Agent 1 is at (8,1), which is not relevant unless there's interaction — but no rules mention agents affecting each other.
+
+Since apples only spawn when the river is clean (i.e., when dirt is removed), and cleaning dirt gives no points, I must first determine if there's dirt to clean at my current position.
+
+Currently, at (7,0):  
+- No apple is present (no indication of apple spawn).  
+- No dirt mentioned, so I cannot clean.  
+- I cannot eat because no apple is available.
+
+Best action: **stay** — wait for information about dirt or apple spawn.  
+
+**Reasoning**: Without dirt to clean, no apple can spawn. I must first ensure I’m on a dirt cell to clean and enable apple spawning. Since no dirt is indicated, and I can't eat, staying is safest and necessary to assess the environment.  
+
+**Action: stay**.
+  Decision: 'stay' -> Env Action: 'stay'
+Step Results: Rewards={1: 0.0, 2: 0.0, 3: 0.0} | Dirts Cleaned This Step: 11
+*a****###*****a
+***a**##x******
+******#xx*****a
+******xxx******
+******x2x******
+******#x#******
+******#x#****a*
+******xxx1*****
+a*****x3x******
+
+  Episode 1/20 | Reward: 0.0 | Dirts: 11 | Apples: 0 | Time: 4164.8s
+  Episode 2/20 | Reward: 0.0 | Dirts: 17 | Apples: 0 | Time: 4439.3s
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+[2026-02-24T17:58:44.025] error: *** JOB 3756549 ON a0023 CANCELLED AT 2026-02-24T17:58:44 DUE TO TIME LIMIT ***
+[2026-02-24T17:58:44.043] error: *** STEP 3756549.0 ON a0023 CANCELLED AT 2026-02-24T17:58:44 DUE TO TIME LIMIT ***

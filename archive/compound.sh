@@ -4,7 +4,7 @@
 #SBATCH --time=100:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=2
+#SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128GB
 #SBATCH --partition=quad
@@ -24,11 +24,11 @@
 #   - To adjust memory usage, modify SAMPLES_PER_MICRO_BATCH (1-2 for A100, lower if OOM)
 #   - To change log probability mode, set LOGPROB_MODE="action" or "action+thinking"
 #
-source ~/.bashrc
-conda activate py311LLM
-module load cuda/12.4.1
+# source ~/.bashrc
+# conda activate py311LLM
+# module load cuda/12.4.1
 # Number of GPUs to use (reads from SLURM allocation)
-NUM_GPUS=${SLURM_GPUS_PER_NODE:-4}
+NUM_GPUS=${SLURM_GPUS_PER_NODE:-1}
 
 echo "=========================================="
 echo "GRPO Multi-GPU Training (SLURM Job)"
@@ -57,10 +57,10 @@ fi
 # Model and training configuration
 MODEL_NAME="Qwen/Qwen3-4B-Instruct-2507"
 # MODEL_NAME="Qwen/Qwen3-4B-Base"
-EPISODES_PER_GPU=8 # Each GPU will collect this many episodes per group
+EPISODES_PER_GPU=2 # Each GPU will collect this many episodes per group
 TOTAL_EPISODES=2048
-MAX_ENV_STEPS=30
-NUM_AGENTS=3
+MAX_ENV_STEPS=6
+NUM_AGENTS=1
 LEARNING_RATE=1e-6
 THINKING_TOKENS=256
 ACTION_TOKENS=128
@@ -69,7 +69,7 @@ LOGPROB_MODE="action"  # "action" (only action tokens) or "action+thinking" (bot
 # Inner epoch optimization (PPO-style)
 NUM_INNER_EPOCHS=4         # Number of optimization epochs per group
 MINIBATCH_SIZE=8           # Number of trajectories per mini-batch
-SAMPLES_PER_MICRO_BATCH=3  # Number of (prompt, action) samples per micro-batch for gradient accumulation
+SAMPLES_PER_MICRO_BATCH=6  # Number of (prompt, action) samples per micro-batch for gradient accumulation
                            # Adjust based on GPU memory: 1-2 for A100, increase if memory allows
 
 EAT_REWARD=1.0           # Reward for eating an apple (default: 1.0)

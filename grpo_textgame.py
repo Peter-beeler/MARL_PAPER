@@ -71,8 +71,8 @@ class CleanupGameGRPO:
         # ── Accelerator ──
         self.accelerator, self.device = setup_accelerator(config)
 
-        # Detect ZeRO-3 so we can skip operations that are incompatible with
-        # sharded parameters (deepcopy, external clip_grad_norm_, etc.)
+        # Detect DeepSpeed so we can adjust operations accordingly
+        # (gradient clipping is handled by DS engine, etc.)
         self.use_deepspeed = (
             self.accelerator is not None and
             getattr(getattr(self.accelerator, 'state', None), 'deepspeed_plugin', None) is not None
@@ -188,22 +188,18 @@ class CleanupGameGRPO:
 
     def update_old_model(self):
         """Copy current model weights to old model (θ_old ← θ)."""
-        if self.use_deepspeed:
-            # With ZeRO-3, model parameters are sharded across GPUs.
-            # deepcopy / load_state_dict on a sharded model only copies the
-            # local shard, producing a broken old_model.
-            # This is safe to skip: old log-probs are captured at rollout time
-            # from the current model before any inner-epoch update, so
-            # generation.py falls back to gen_model (identical behaviour).
-            if self.accelerator.is_main_process:
-                logger.info("ZeRO-3: skipping old_model copy — log-probs captured at rollout time")
-            self.old_model = None
-            return
+        # With DeepSpeed the model is wrapped in a DeepSpeedEngine which
+        # contains unpicklable ProcessGroup objects.  Always operate on
+        # the unwrapped model for deepcopy / state_dict operations.
+        if self.accelerator is not None:
+            unwrapped = self.accelerator.unwrap_model(self.model)
+        else:
+            unwrapped = self.model
 
         if self.old_model is None:
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("Creating old model (first group)...")
-            self.old_model = copy.deepcopy(self.model)
+            self.old_model = copy.deepcopy(unwrapped)
             self.old_model.eval()
             for param in self.old_model.parameters():
                 param.requires_grad = False
@@ -212,7 +208,7 @@ class CleanupGameGRPO:
         else:
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("Updating old model with current weights...")
-            self.old_model.load_state_dict(self.model.state_dict())
+            self.old_model.load_state_dict(unwrapped.state_dict())
             self.old_model.eval()
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("  ✓ Old model updated")
@@ -514,8 +510,8 @@ class CleanupGameGRPO:
                     checkpoint_path = os.path.join(config.output_dir, "best_model")
                     try:
                         if self.use_deepspeed:
-                            # ZeRO-3: parameters are sharded — must gather all
-                            # shards from every GPU before writing to disk.
+                            # DeepSpeed: use accelerator helpers to properly
+                            # unwrap and save the model state dict.
                             unwrapped = accelerator.unwrap_model(self.model)
                             state_dict = accelerator.get_state_dict(self.model)
                             unwrapped.save_pretrained(

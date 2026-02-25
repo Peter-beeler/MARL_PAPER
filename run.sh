@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=40:00:00
-#SBATCH --nodes=1 --ntasks-per-node=8  --gpus-per-node=1
+#SBATCH --nodes=2 --ntasks-per-node=8  --gpus-per-node=2
 #SBATCH --job-name=zeroshot_exp
 #SBATCH --partition=nextgen
 #SBATCH --account=PAS2138

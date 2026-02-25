@@ -27,10 +27,10 @@
 source ~/.bashrc
 conda activate py311LLM
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-# module load cuda/12.4.1
+module load cuda/12.4.1
 
 # Number of GPUs (reads from SLURM allocation, default 2)
-NUM_GPUS=${SLURM_GPUS_PER_NODE:-4}
+NUM_GPUS=${SLURM_GPUS_PER_NODE:-2}
 
 echo "=========================================="
 echo "GRPO TextGame Training (SLURM Job)"
@@ -51,20 +51,16 @@ export NCCL_DEBUG=WARN
 # Force NCCL to stay away from P2P and Shared Memory
 # ── Hardware/Kernel Workarounds ───────────────────────────────────────────
 # Force NCCL to behave like it's on a slow, non-GPU-direct network
-export NCCL_P2P_DISABLE=1
 export NCCL_P2P_LEVEL=0
-export NCCL_SHM_DISABLE=1
-export NCCL_IB_DISABLE=1
 export NCCL_COLLNET_ENABLE=0
 export NCCL_NET_GDR_LEVEL=0
 
 # Explicitly tell NCCL to use the Loopback interface for all communication
 # This avoids it trying to "probe" physical NICs that might trigger the crash
-export NCCL_SOCKET_IFNAME=lo 
 
-# Additional PyTorch/CUDA safety for older kernels
-export CUDA_LAUNCH_BLOCKING=1
-export TORCH_DIST_DEBUG=INFO          # Disable collective networking
+# CUDA_LAUNCH_BLOCKING=1 removed — it serializes all CUDA ops (huge slowdown)
+# TORCH_DIST_DEBUG=INFO removed — excessive logging overhead
+export TORCH_DIST_DEBUG=OFF
 
 # Ensure PyTorch doesn't try to use the UCX backend which can also SIGSEGV
 export COLL_NET_ENABLE=0
@@ -73,7 +69,7 @@ export PYTHONFAULTHANDLER=1        # Will print a traceback for the SIGSEGV
 # segfault on Linux kernel < 5.5 with NCCL 2.21+.
 # Disable both so NCCL falls back to TCP socket transport (slower but stable).
 export OMP_NUM_THREADS=4
-export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:1024
 # Suppress TensorFlow CUDA-plugin conflict noise (TF is in env but not used).
 export TF_CPP_MIN_LOG_LEVEL=3
 # Point Triton autotune cache to local /tmp to avoid NFS-related hangs.
@@ -90,31 +86,31 @@ ACTION_MODE="compound"          # "text" or "compound"
 USE_TWO_STAGE=true          # text mode: true = two-stage (thinking→word), false = single-stage
 LOGPROB_MODE="action"       # "action" or "action+thinking" (text mode only)
 
-# ── DeepSpeed ZeRO-3 ───────────────────────────────────────────────────────
-# Shards model params, gradients, and optimizer states across all GPUs so a
-# 4B model fits in 4 × 16 GB A4000s.  Optimizer states are CPU-offloaded.
+# ── DeepSpeed ZeRO-2 ───────────────────────────────────────────────────────
+# Shards gradients and optimizer states across all GPUs (params replicated).
+# No CPU offloading — optimizer runs entirely on GPU.
 # Set to false to use plain DDP (requires larger per-GPU VRAM).
 USE_DEEPSPEED=true
 
 # ── Model ──────────────────────────────────────────────────────────────────
-# MODEL_NAME="Qwen/Qwen3-4B-Instruct-2507"
-MODEL_NAME="Qwen/Qwen2.5-0.5B"  # smaller for testing;
+MODEL_NAME="Qwen/Qwen3-4B-Instruct-2507"
+# MODEL_NAME="Qwen/Qwen2.5-0.5B"  # smaller for testing;
 # ── Token budgets ──────────────────────────────────────────────────────────
-THINKING_TOKENS=256         # tokens for stage 1 reasoning
+THINKING_TOKENS=256         # tokens for stage 1 reasoning (more room for 4B model)
 ACTION_TOKENS=128           # tokens for stage 2 action/JSON generation
 
 # ── Training ───────────────────────────────────────────────────────────────
 TOTAL_EPISODES=2048
-EPISODES_PER_GPU=2         # episodes each GPU collects per group
-MAX_ENV_STEPS=3
-NUM_AGENTS=1
-LEARNING_RATE=1e-6
+EPISODES_PER_GPU=8         # episodes each GPU collects per group
+MAX_ENV_STEPS=30
+NUM_AGENTS=3
+LEARNING_RATE=1e-5
 LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 
 # ── Inner optimization (PPO-style) ─────────────────────────────────────────
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
-SAMPLES_PER_MICRO_BATCH=3  # lower if OOM; 1-2 for A100 40 GB
+SAMPLES_PER_MICRO_BATCH=4  # A100 40GB has headroom; lower to 3 if OOM
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
@@ -122,7 +118,7 @@ CLEAN_REWARD=0.2            # 0.0 = disabled
 
 # ── Output ────────────────────────────────────────────────────────────────
 OUTPUT_DIR="./grpo_textgame_checkpoints"
-NUM_EVAL_EPISODES=10
+NUM_EVAL_EPISODES=20
 
 # ── Wandb ─────────────────────────────────────────────────────────────────
 USE_WANDB=true
@@ -159,7 +155,7 @@ if [ "$USE_WANDB" = true ]; then
     [ -n "$WANDB_ENTITY" ]   && echo "  Wandb entity:            $WANDB_ENTITY"
     [ -n "$WANDB_RUN_NAME" ] && echo "  Wandb run name:          $WANDB_RUN_NAME"
 fi
-echo "  DeepSpeed ZeRO-3:        $USE_DEEPSPEED"
+echo "  DeepSpeed ZeRO-2:        $USE_DEEPSPEED"
 echo ""
 
 # ── GPU info ──────────────────────────────────────────────────────────────
@@ -202,11 +198,8 @@ accelerate launch \
     --num_machines 1 \
     --mixed_precision bf16 \
     $DEEPSPEED_FLAG \
-    --zero_stage 3 \
-    --offload_optimizer_device cpu \
-    --offload_param_device cpu \
-    --no_python \
-    python $SCRIPT_DIR/grpo_textgame.py \
+    --zero_stage 2 \
+    $SCRIPT_DIR/grpo_textgame.py \
     --action_mode "$ACTION_MODE" \
     $TWO_STAGE_FLAG \
     --logprob_mode "$LOGPROB_MODE" \
@@ -227,6 +220,8 @@ accelerate launch \
     --output_dir "$OUTPUT_DIR" \
     --use_accelerate \
     --num_eval_episodes $NUM_EVAL_EPISODES \
+    --save_steps 256 \
+    --eval_interval 128 \
     --skip_pre_eval \
     --seed 42 \
     $DEEPSPEED_FLAG \
