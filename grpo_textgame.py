@@ -25,6 +25,8 @@ import sys
 import copy
 import json
 import logging
+import shutil
+import signal
 import warnings
 import time
 
@@ -44,7 +46,7 @@ from utils.model_setup import (
     AllowOnlyActionWords, log_cuda_memory,
 )
 from utils.eval import _generate_eval_states, evaluate, visualize_rollout
-from utils.rollout import run_episode, log_episode_to_file
+from utils.rollout import run_episode, run_parallel_episodes, log_episode_to_file
 from utils.loss import compute_advantages, create_minibatch_iterator, flatten_trajectories, compute_loss_on_samples
 from utils.args import parse_args
 
@@ -182,9 +184,192 @@ class CleanupGameGRPO:
         if self.accelerator is None or self.accelerator.is_main_process:
             logger.info(f"Generated {len(self.eval_states)} fixed evaluation states")
 
+        # ── Signal handlers for graceful shutdown ──
+        self._interrupted = False
+        self._setup_signal_handlers()
+
     # ────────────────────────────────────
     # Model management
     # ────────────────────────────────────
+
+    def _setup_signal_handlers(self):
+        """Register SIGTERM/SIGUSR1 handlers for graceful SLURM shutdown."""
+        def _handle_signal(signum, frame):
+            sig_name = signal.Signals(signum).name
+            if self.accelerator is None or self.accelerator.is_main_process:
+                logger.info(f"\n⚠ Received {sig_name} — will save checkpoint and exit after current step")
+            self._interrupted = True
+
+        # SIGTERM: SLURM sends this before SIGKILL (grace period, typically 30-120s)
+        signal.signal(signal.SIGTERM, _handle_signal)
+        # SIGUSR1: some SLURM configs use this for preemption warning
+        try:
+            signal.signal(signal.SIGUSR1, _handle_signal)
+        except (OSError, ValueError):
+            pass  # SIGUSR1 not available on all platforms
+
+    def _save_model(self, checkpoint_name: str, episode: int = None):
+        """Save model checkpoint atomically to output_dir/checkpoint_name.
+
+        Writes to a temporary directory first, then renames. If interrupted
+        mid-write, the previous checkpoint remains intact.
+        """
+        accelerator = self.accelerator
+        config = self.config
+        if accelerator is not None and not accelerator.is_main_process:
+            return
+
+        checkpoint_path = os.path.join(config.output_dir, checkpoint_name)
+        tmp_path = checkpoint_path + "_tmp"
+        backup_path = checkpoint_path + "_backup"
+
+        try:
+            # Clean up any leftover tmp dir from a previous failed save
+            if os.path.exists(tmp_path):
+                shutil.rmtree(tmp_path)
+            os.makedirs(tmp_path, exist_ok=True)
+
+            # Write model + tokenizer to tmp dir
+            if self.use_deepspeed:
+                unwrapped = accelerator.unwrap_model(self.model)
+                state_dict = accelerator.get_state_dict(self.model)
+                unwrapped.save_pretrained(
+                    tmp_path,
+                    is_main_process=accelerator.is_main_process,
+                    save_function=accelerator.save,
+                    state_dict=state_dict,
+                )
+            elif accelerator is not None:
+                unwrapped = accelerator.unwrap_model(self.model)
+                unwrapped.save_pretrained(tmp_path)
+            else:
+                self.model.save_pretrained(tmp_path)
+            self.tokenizer.save_pretrained(tmp_path)
+
+            # Atomic swap: old → backup, tmp → target, remove backup
+            if os.path.exists(checkpoint_path):
+                if os.path.exists(backup_path):
+                    shutil.rmtree(backup_path)
+                os.rename(checkpoint_path, backup_path)
+            os.rename(tmp_path, checkpoint_path)
+            if os.path.exists(backup_path):
+                shutil.rmtree(backup_path)
+
+            logger.info(f"  Saved checkpoint → {checkpoint_path}")
+        except Exception as e:
+            # Restore from backup if the swap failed
+            if not os.path.exists(checkpoint_path) and os.path.exists(backup_path):
+                os.rename(backup_path, checkpoint_path)
+                logger.info(f"  Restored previous checkpoint from backup")
+            logger.warning(f"  Failed to save model: {e}")
+
+    def _save_training_state(self, episode, group_num, best_eval_reward):
+        """Save optimizer, scheduler, and training metadata for resuming.
+
+        Writes atomically alongside the latest checkpoint.
+        """
+        accelerator = self.accelerator
+        config = self.config
+        if accelerator is not None and not accelerator.is_main_process:
+            return
+
+        state_path = os.path.join(config.output_dir, "training_state")
+        tmp_path = state_path + "_tmp"
+
+        try:
+            if os.path.exists(tmp_path):
+                shutil.rmtree(tmp_path)
+            os.makedirs(tmp_path, exist_ok=True)
+
+            # Save optimizer & scheduler state
+            torch.save(
+                self.optimizer.state_dict(),
+                os.path.join(tmp_path, "optimizer.pt"),
+            )
+            torch.save(
+                self.scheduler.state_dict(),
+                os.path.join(tmp_path, "scheduler.pt"),
+            )
+
+            # Save training metadata
+            metadata = {
+                "episode": episode,
+                "group_num": group_num,
+                "training_step": self.training_step,
+                "best_eval_reward": best_eval_reward,
+                "episode_rewards": self.episode_rewards,
+                "episode_steps": self.episode_steps,
+            }
+            with open(os.path.join(tmp_path, "metadata.json"), "w") as f:
+                json.dump(metadata, f, indent=2)
+
+            # Atomic swap
+            backup_path = state_path + "_backup"
+            if os.path.exists(state_path):
+                if os.path.exists(backup_path):
+                    shutil.rmtree(backup_path)
+                os.rename(state_path, backup_path)
+            os.rename(tmp_path, state_path)
+            if os.path.exists(backup_path):
+                shutil.rmtree(backup_path)
+
+            logger.info(f"  Saved training state → {state_path}")
+        except Exception as e:
+            if not os.path.exists(state_path) and os.path.exists(state_path + "_backup"):
+                os.rename(state_path + "_backup", state_path)
+            logger.warning(f"  Failed to save training state: {e}")
+
+    def load_training_state(self, resume_dir):
+        """Load optimizer, scheduler, and training metadata from a checkpoint.
+
+        Args:
+            resume_dir: Path to the output_dir that contains training_state/
+                        and a model checkpoint.
+
+        Returns:
+            metadata dict with episode, group_num, training_step, best_eval_reward.
+        """
+        state_path = os.path.join(resume_dir, "training_state")
+        if not os.path.exists(state_path):
+            logger.warning(f"No training_state found in {resume_dir}, starting fresh")
+            return None
+
+        is_main = self.accelerator is None or self.accelerator.is_main_process
+
+        # Load metadata
+        metadata_file = os.path.join(state_path, "metadata.json")
+        with open(metadata_file, "r") as f:
+            metadata = json.load(f)
+
+        # Load optimizer state
+        opt_file = os.path.join(state_path, "optimizer.pt")
+        if os.path.exists(opt_file):
+            opt_state = torch.load(opt_file, map_location="cpu")
+            self.optimizer.load_state_dict(opt_state)
+            if is_main:
+                logger.info(f"  Loaded optimizer state from {opt_file}")
+
+        # Load scheduler state
+        sched_file = os.path.join(state_path, "scheduler.pt")
+        if os.path.exists(sched_file):
+            sched_state = torch.load(sched_file, map_location="cpu")
+            self.scheduler.load_state_dict(sched_state)
+            if is_main:
+                logger.info(f"  Loaded scheduler state from {sched_file}")
+
+        # Restore training counters
+        self.training_step = metadata.get("training_step", 0)
+        self.episode_rewards = metadata.get("episode_rewards", [])
+        self.episode_steps = metadata.get("episode_steps", [])
+
+        if is_main:
+            logger.info(
+                f"  Resumed from episode={metadata['episode']}, "
+                f"group={metadata['group_num']}, step={self.training_step}, "
+                f"best_eval_reward={metadata['best_eval_reward']:.2f}"
+            )
+
+        return metadata
 
     def update_old_model(self):
         """Copy current model weights to old model (θ_old ← θ)."""
@@ -229,8 +414,13 @@ class CleanupGameGRPO:
     # Training loop
     # ────────────────────────────────────
 
-    def train(self):
-        """Main training loop."""
+    def train(self, resume_metadata=None):
+        """Main training loop.
+
+        Args:
+            resume_metadata: If not None, dict with episode, group_num,
+                             best_eval_reward from a previous run.
+        """
         config = self.config
         accelerator = self.accelerator
 
@@ -248,6 +438,13 @@ class CleanupGameGRPO:
                 logger.info(f"[Actions] Compound JSON helpers: {self.helper_functions}")
             logger.info(f"[Agents] {config.num_agents}")
             logger.info(f"[Episodes] {config.num_episodes}")
+            _penvs = config.parallel_envs if config.parallel_envs > 0 else (
+                config.episodes_per_gpu if accelerator is not None else config.episodes_per_update
+            )
+            logger.info(
+                f"[Parallel Rollout] {_penvs} envs/batch, "
+                f"macro_infer_batch={config.macro_infer_batch}"
+            )
             if accelerator is not None:
                 eps_per_group = config.episodes_per_gpu * accelerator.num_processes
                 logger.info(
@@ -256,9 +453,17 @@ class CleanupGameGRPO:
                 )
             logger.info("=" * 70 + "\n")
 
-        episode = 0
-        best_reward = float('-inf')
-        group_num = 0
+        if resume_metadata:
+            episode = resume_metadata["episode"]
+            best_eval_reward = resume_metadata.get("best_eval_reward", float('-inf'))
+            group_num = resume_metadata.get("group_num", 0)
+            if accelerator is None or accelerator.is_main_process:
+                logger.info(f"[Resumed] Starting from episode={episode}, group={group_num}, "
+                            f"best_eval_reward={best_eval_reward:.2f}")
+        else:
+            episode = 0
+            best_eval_reward = float('-inf')
+            group_num = 0
 
         while episode < config.num_episodes:
             group_start_episode = episode
@@ -273,45 +478,81 @@ class CleanupGameGRPO:
             # Step 1: Update old model
             self.update_old_model()
 
-            # Step 2: Collect trajectories
+            # Step 2: Collect trajectories (parallel envs)
+            parallel_envs = config.parallel_envs if config.parallel_envs > 0 else (
+                config.episodes_per_gpu if accelerator is not None else config.episodes_per_update
+            )
+
             if accelerator is not None:
+                total_needed = config.episodes_per_gpu
                 trajectories = []
-                for i in range(config.episodes_per_gpu):
+                batch_idx = 0
+                while len(trajectories) < total_needed:
+                    batch_size = min(parallel_envs, total_needed - len(trajectories))
+                    log_samples_flag = (
+                        batch_idx == 0 and
+                        group_num % config.log_interval == 0 and
+                        accelerator.is_main_process
+                    )
                     try:
-                        log_samples = (
-                            i == 0 and
-                            group_num % config.log_interval == 0 and
-                            accelerator.is_main_process
+                        batch_trajs = run_parallel_episodes(
+                            self, num_envs=batch_size,
+                            use_ref_model=False,
+                            log_samples=log_samples_flag,
+                            same_init_state=True,
                         )
-                        traj = run_episode(self, use_ref_model=False, log_samples=log_samples)
-                        trajectories.append(traj)
-                        if not log_samples:
+                        trajectories.extend(batch_trajs)
+                        for j, traj in enumerate(batch_trajs):
                             logger.info(
-                                f"  [GPU{accelerator.process_index}] Ep{i}: "
+                                f"  [GPU{accelerator.process_index}] Ep{len(trajectories)-len(batch_trajs)+j}: "
                                 f"R={traj['total_reward']:.2f}, Steps={traj['steps']}, "
                                 f"Time={traj['rollout_time']:.2f}s"
                             )
                     except Exception as e:
                         logger.error(
-                            f"  [GPU{accelerator.process_index}] Episode {i} failed: {e}",
+                            f"  [GPU{accelerator.process_index}] Parallel batch {batch_idx} failed: {e}",
                             exc_info=True
                         )
-                        continue
+                        # Fall back to sequential for this batch
+                        for i in range(batch_size):
+                            try:
+                                traj = run_episode(self, use_ref_model=False, log_samples=False)
+                                trajectories.append(traj)
+                            except Exception as e2:
+                                logger.error(f"  Fallback episode also failed: {e2}")
+                                continue
+                    batch_idx += 1
             else:
+                total_needed = config.episodes_per_update
                 trajectories = []
-                for i in range(config.episodes_per_update):
+                batch_idx = 0
+                while len(trajectories) < total_needed:
+                    batch_size = min(parallel_envs, total_needed - len(trajectories))
+                    log_samples_flag = (batch_idx == 0 and group_num % config.log_interval == 0)
                     try:
-                        log_samples = (i == 0 and group_num % config.log_interval == 0)
-                        traj = run_episode(self, use_ref_model=False, log_samples=log_samples)
-                        trajectories.append(traj)
-                        if not log_samples:
+                        batch_trajs = run_parallel_episodes(
+                            self, num_envs=batch_size,
+                            use_ref_model=False,
+                            log_samples=log_samples_flag,
+                            same_init_state=True,
+                        )
+                        trajectories.extend(batch_trajs)
+                        for j, traj in enumerate(batch_trajs):
                             logger.info(
-                                f"  Ep{episode + i}: R={traj['total_reward']:.2f}, "
-                                f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
+                                f"  Ep{episode + len(trajectories)-len(batch_trajs)+j}: "
+                                f"R={traj['total_reward']:.2f}, Steps={traj['steps']}, "
+                                f"Time={traj['rollout_time']:.2f}s"
                             )
                     except Exception as e:
-                        logger.error(f"Episode {episode + i} failed: {e}", exc_info=True)
-                        continue
+                        logger.error(f"Parallel batch {batch_idx} failed: {e}", exc_info=True)
+                        for i in range(batch_size):
+                            try:
+                                traj = run_episode(self, use_ref_model=False, log_samples=False)
+                                trajectories.append(traj)
+                            except Exception as e2:
+                                logger.error(f"Fallback episode failed: {e2}")
+                                continue
+                    batch_idx += 1
 
             # Update episode counter
             if accelerator is not None:
@@ -499,58 +740,49 @@ class CleanupGameGRPO:
                 group_num += 1
                 continue
 
-            # Track best reward
-            if avg_reward > best_reward:
-                best_reward = avg_reward
-
-            # Save checkpoint
-            if (accelerator is None or accelerator.is_main_process) and \
-               (episode % config.save_steps == 0 or episode >= config.num_episodes):
-                if avg_reward >= best_reward:
-                    checkpoint_path = os.path.join(config.output_dir, "best_model")
-                    try:
-                        if self.use_deepspeed:
-                            # DeepSpeed: use accelerator helpers to properly
-                            # unwrap and save the model state dict.
-                            unwrapped = accelerator.unwrap_model(self.model)
-                            state_dict = accelerator.get_state_dict(self.model)
-                            unwrapped.save_pretrained(
-                                checkpoint_path,
-                                is_main_process=accelerator.is_main_process,
-                                save_function=accelerator.save,
-                                state_dict=state_dict,
-                            )
-                        elif accelerator is not None:
-                            unwrapped = accelerator.unwrap_model(self.model)
-                            unwrapped.save_pretrained(checkpoint_path)
-                        else:
-                            self.model.save_pretrained(checkpoint_path)
-                        self.tokenizer.save_pretrained(checkpoint_path)
-                        logger.info(f"  Saved best model (R={best_reward:.2f})")
-                    except Exception as e:
-                        logger.warning(f"  Failed to save model: {e}")
-
+            # Save training stats atomically (write to tmp, then rename)
+            if accelerator is None or accelerator.is_main_process:
                 stats = {
                     "episode": episode, "group": group_num,
                     "rewards": self.episode_rewards, "steps": self.episode_steps,
-                    "best_reward": best_reward, "training_step": self.training_step
+                    "best_eval_reward": best_eval_reward, "training_step": self.training_step
                 }
-                with open(os.path.join(config.output_dir, "training_stats.json"), "w") as f:
+                stats_path = os.path.join(config.output_dir, "training_stats.json")
+                stats_tmp = stats_path + ".tmp"
+                with open(stats_tmp, "w") as f:
                     json.dump(stats, f, indent=2)
+                os.replace(stats_tmp, stats_path)
 
-            # Mid-training evaluation
+            # Mid-training evaluation + model saving
             if config.eval_interval > 0 and episode % config.eval_interval == 0 and episode < config.num_episodes:
                 if accelerator is None or accelerator.is_main_process:
                     logger.info(f"\n=== Mid-Training Evaluation (Episode {episode}) ===")
-                self.evaluate(num_episodes=config.num_eval_episodes, current_episode=episode)
+                eval_reward, _ = self.evaluate(num_episodes=config.num_eval_episodes, current_episode=episode)
                 if accelerator is None or accelerator.is_main_process:
+                    self._save_model(f"checkpoint_ep{episode}", episode)
+                    self._save_training_state(episode, group_num, best_eval_reward)
+                    if eval_reward > best_eval_reward:
+                        best_eval_reward = eval_reward
+                        self._save_model("best_model", episode)
+                        logger.info(f"  New best eval reward: {best_eval_reward:.2f}")
                     logger.info("=== Resuming Training ===\n")
+
+            # Check for SIGTERM / SIGUSR1 interruption
+            if self._interrupted:
+                if accelerator is None or accelerator.is_main_process:
+                    logger.info(f"\n⚠ Interrupted at episode {episode}, group {group_num}. Saving checkpoint...")
+                    self._save_model(f"interrupted_ep{episode}", episode)
+                    self._save_training_state(episode, group_num, best_eval_reward)
+                    logger.info("  Interrupt checkpoint saved. Exiting training loop.")
+                break
 
             group_num += 1
 
+        self._last_episode = episode
+
         if accelerator is None or accelerator.is_main_process:
             logger.info(f"\n=== Training Complete ===")
-            logger.info(f"Best reward: {best_reward:.2f}, Total groups: {group_num}\n")
+            logger.info(f"Best eval reward: {best_eval_reward:.2f}, Total groups: {group_num}\n")
 
         return self.model
 
@@ -689,6 +921,8 @@ def main():
         num_episodes=args.num_episodes,
         episodes_per_update=args.episodes_per_update,
         episodes_per_gpu=args.episodes_per_gpu,
+        parallel_envs=args.parallel_envs,
+        macro_infer_batch=args.macro_infer_batch,
         num_agents=args.num_agents,
         max_env_steps=args.max_env_steps,
         eat_reward=args.eat_reward,
@@ -718,6 +952,64 @@ def main():
 
     trainer = CleanupGameGRPO(config)
 
+    # ── Resume from checkpoint if requested ──
+    resume_metadata = None
+    if args.resume_from:
+        logger.info(f"\n=== Resuming from {args.resume_from} ===")
+        # Find the most recent model checkpoint in the resume dir
+        resume_dir = args.resume_from
+        # Try to find a model checkpoint (adapter weights for LoRA)
+        import glob as glob_mod
+        # Look for checkpoint_ep*, interrupted_ep*, or best_model
+        ckpt_candidates = sorted(
+            glob_mod.glob(os.path.join(resume_dir, "checkpoint_ep*")) +
+            glob_mod.glob(os.path.join(resume_dir, "interrupted_ep*")),
+            key=os.path.getmtime,
+        )
+        model_ckpt = ckpt_candidates[-1] if ckpt_candidates else os.path.join(resume_dir, "best_model")
+        if os.path.exists(model_ckpt):
+            logger.info(f"  Loading model weights from {model_ckpt}")
+            from peft import set_peft_model_state_dict
+            try:
+                from safetensors.torch import load_file
+                adapter_path = os.path.join(model_ckpt, "adapter_model.safetensors")
+                if os.path.exists(adapter_path):
+                    state_dict = load_file(adapter_path)
+                else:
+                    adapter_path = os.path.join(model_ckpt, "adapter_model.bin")
+                    state_dict = torch.load(adapter_path, map_location="cpu")
+                set_peft_model_state_dict(
+                    trainer.accelerator.unwrap_model(trainer.model)
+                    if trainer.accelerator is not None else trainer.model,
+                    state_dict,
+                )
+                logger.info(f"  Loaded adapter weights from {adapter_path}")
+            except Exception as e:
+                logger.warning(f"  Could not load adapter weights: {e}")
+                logger.info("  Attempting full model state dict load...")
+                try:
+                    unwrapped = (
+                        trainer.accelerator.unwrap_model(trainer.model)
+                        if trainer.accelerator is not None else trainer.model
+                    )
+                    from transformers import AutoModelForCausalLM
+                    resumed_model = AutoModelForCausalLM.from_pretrained(
+                        model_ckpt, torch_dtype=torch.bfloat16
+                    )
+                    unwrapped.load_state_dict(resumed_model.state_dict(), strict=False)
+                    del resumed_model
+                    logger.info(f"  Loaded full model weights from {model_ckpt}")
+                except Exception as e2:
+                    logger.error(f"  Failed to load model weights: {e2}")
+        else:
+            logger.warning(f"  No model checkpoint found in {resume_dir}")
+
+        # Load training state (optimizer, scheduler, counters)
+        resume_metadata = trainer.load_training_state(resume_dir)
+        if resume_metadata:
+            logger.info(f"  Will resume training from episode {resume_metadata['episode']}")
+        logger.info("=== Resume complete ===\n")
+
     # Visualization mode
     if args.visualize:
         logger.info("\n=== VISUALIZATION MODE ===")
@@ -729,18 +1021,22 @@ def main():
         logger.info("\nVisualization complete. Exiting.")
         return
 
-    # Pre-training evaluation
-    if not args.skip_pre_eval:
+    # Pre-training evaluation (uses same fixed eval_states as mid-training evals)
+    # Skip pre-eval when resuming (baseline already captured in original run)
+    if not args.skip_pre_eval and resume_metadata is None:
         logger.info("\n=== Pre-Training Evaluation ===")
-        trainer.evaluate(num_episodes=args.num_eval_episodes)
+        trainer.evaluate(num_episodes=args.num_eval_episodes, current_episode=0)
 
     # Training
-    model = trainer.train()
+    model = trainer.train(resume_metadata=resume_metadata)
 
-    # Post-training evaluation
+    # Post-training evaluation + final model save
     if not args.skip_post_eval:
+        final_ep = getattr(trainer, '_last_episode', config.num_episodes)
         logger.info("\n=== Post-Training Evaluation ===")
-        trainer.evaluate(num_episodes=args.num_eval_episodes)
+        eval_reward, _ = trainer.evaluate(num_episodes=args.num_eval_episodes, current_episode=final_ep)
+        trainer._save_model(f"checkpoint_ep{final_ep}", final_ep)
+        logger.info(f"  Final model saved at episode {final_ep}")
 
     # Finish wandb
     if config.use_wandb:

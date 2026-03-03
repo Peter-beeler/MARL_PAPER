@@ -129,6 +129,171 @@ def run_episode(
     return trajectory
 
 
+def run_parallel_episodes(
+    trainer,
+    num_envs: int,
+    use_ref_model: bool = False,
+    log_samples: bool = False,
+    same_init_state: bool = True,
+    initial_states: Optional[List[Dict]] = None,
+) -> List[Dict]:
+    """
+    Run multiple episodes in parallel with batched inference across all envs.
+
+    Creates num_envs environments (optionally sharing the same initial state),
+    steps them in lock-step, and batches all agent prompts across all active envs
+    into chunked model.generate() calls.
+
+    Args:
+        trainer: CleanupGameGRPO instance.
+        num_envs: Number of environments to run in parallel.
+        use_ref_model: If True, use reference model.
+        log_samples: If True, log sample generation from first env.
+        same_init_state: If True, all envs start from the same random initial state.
+            Ignored when initial_states is provided.
+        initial_states: Optional list of state dicts (one per env) for evaluation.
+            When provided, each env is set to its corresponding state.
+
+    Returns:
+        List of num_envs trajectory dicts (same format as run_episode).
+    """
+    from env_move import CleanupEnvMove
+    from .generation import generate_actions_multi_env_batch
+
+    start_time = time.time()
+    config = trainer.config
+    macro_infer_batch = getattr(config, 'macro_infer_batch', 24)
+
+    # Create and reset environments
+    envs = [CleanupEnvMove(trainer.env_config) for _ in range(num_envs)]
+    obs_list = []
+
+    if initial_states is not None:
+        # Eval mode: each env gets a specific initial state
+        for idx, env in enumerate(envs):
+            env.reset()
+            env.set_state(initial_states[idx])
+            obs_list.append(env._observation())
+    elif same_init_state and num_envs > 1:
+        obs_list.append(envs[0].reset())
+        init_state = envs[0].get_state()
+        for env in envs[1:]:
+            env.reset()
+            env.set_state(init_state)
+            obs_list.append(env._observation())
+    else:
+        for env in envs:
+            obs_list.append(env.reset())
+
+    # Select model
+    if use_ref_model and getattr(trainer, 'ref_model', None) is None:
+        logger.warning("Reference model requested but not available. Using current policy.")
+        model = trainer.model
+    else:
+        model = trainer.ref_model if use_ref_model else trainer.model
+
+    # Initialize trajectories
+    trajectories = []
+    for _ in range(num_envs):
+        trajectories.append({
+            "prompts": [], "actions": [], "responses": [],
+            "action_prompts": [], "action_texts": [],
+            "rewards": [], "log_probs": [], "agent_ids": [],
+            "observations": [], "action_input_ids": [], "action_ids": [],
+        })
+
+    active_mask = [True] * num_envs
+    total_rewards = [0.0] * num_envs
+    final_infos = [None] * num_envs
+    steps_taken = [0] * num_envs
+
+    for step in range(config.max_env_steps):
+        active_indices = [i for i in range(num_envs) if active_mask[i]]
+        if not active_indices:
+            break
+
+        # Build active env data for batched generation
+        active_env_data = [(i, envs[i], obs_list[i]) for i in active_indices]
+
+        # Generate actions for all agents across all active envs
+        all_results = generate_actions_multi_env_batch(
+            trainer, active_env_data, step, model, macro_infer_batch
+        )
+
+        # Step each active env
+        for i in active_indices:
+            env_results = all_results[i]
+            actions = {}
+
+            for agent_id in range(1, config.num_agents + 1):
+                (action, log_prob, thinking_text, full_response, action_text,
+                 action_prompt, action_input_ids, action_ids) = env_results[agent_id]
+
+                actions[agent_id] = action
+                traj = trajectories[i]
+
+                traj["prompts"].append(
+                    action_prompt if action_prompt else
+                    _get_stored_prompt(trainer, obs_list[i], agent_id, step, envs[i])
+                )
+                traj["actions"].append(action)
+                traj["responses"].append(full_response)
+                traj["action_prompts"].append(action_prompt)
+                traj["action_texts"].append(action_text)
+                traj["log_probs"].append(
+                    log_prob.detach().item() if torch.is_tensor(log_prob) else float(log_prob)
+                )
+                traj["agent_ids"].append(agent_id)
+                traj["observations"].append(obs_list[i][agent_id])
+                traj["action_input_ids"].append(action_input_ids)
+                traj["action_ids"].append(action_ids)
+
+                # Log sample from first env only
+                if log_samples and step == 0 and agent_id == 1 and i == active_indices[0]:
+                    obs_text = obs_to_text(obs_list[i][agent_id], envs[i], agent_id, config)
+                    if config.action_mode == "compound":
+                        logger.info(f"\n  Sample generation (compound, parallel {num_envs} envs):")
+                        logger.info(f"    Obs: {obs_text}")
+                        logger.info(f"    Response: '{full_response[:200]}'")
+                        logger.info(f"    → Low-level action: {action}")
+                    else:
+                        logger.info(f"\n  Sample generation (text, parallel {num_envs} envs):")
+                        logger.info(f"    Obs: {obs_text}")
+                        if thinking_text:
+                            logger.info(f"    Thinking: '{thinking_text[:100]}...'")
+                        if action_text and action_text != full_response:
+                            logger.info(f"    Action text (stage 2): '{action_text}'")
+                        logger.info(f"    Action: {action}")
+
+            obs_list[i], rewards, done, info = envs[i].step(actions)
+            final_infos[i] = info  # always keep latest info
+
+            for agent_id in range(1, config.num_agents + 1):
+                trajectories[i]["rewards"].append(rewards[agent_id])
+                total_rewards[i] += rewards[agent_id]
+
+            steps_taken[i] = step + 1
+
+            if done:
+                active_mask[i] = False
+
+    # Finalize trajectories
+    elapsed = time.time() - start_time
+    for i in range(num_envs):
+        trajectories[i]["total_reward"] = total_rewards[i]
+        trajectories[i]["final_scores"] = (
+            final_infos[i]["scores"] if final_infos[i] is not None else {}
+        )
+        trajectories[i]["steps"] = steps_taken[i]
+        trajectories[i]["rollout_time"] = elapsed / num_envs  # amortized
+
+    if log_samples:
+        from .model_setup import log_cuda_memory
+        log_cuda_memory(f"After parallel rollout ({num_envs} envs)")
+
+    return trajectories
+
+
 def _get_stored_prompt(trainer, obs, agent_id, step, env):
     """
     Build the prompt to store in trajectory['prompts'].

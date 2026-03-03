@@ -80,6 +80,10 @@ class GRPOConfig:
     early_stopping_patience: int = 15
     early_stopping_threshold: float = 0.5
 
+    # Parallel rollout settings
+    parallel_envs: int = 0           # envs to run in parallel per GPU (0 = auto = episodes_per_gpu)
+    macro_infer_batch: int = 24      # max prompts per model.generate() call during rollout
+
     # Multi-GPU settings
     use_accelerate: bool = False
     use_deepspeed: bool = False      # enable DeepSpeed ZeRO-3 (requires use_accelerate=True)

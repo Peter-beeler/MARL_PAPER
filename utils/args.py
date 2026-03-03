@@ -59,9 +59,17 @@ def parse_args():
     parser.add_argument("--micro_batch_size", type=int, default=8,
                         help="DEPRECATED - Use --samples_per_micro_batch instead")
 
+    # ── Parallel rollout ──
+    parser.add_argument("--parallel_envs", type=int, default=0,
+                        help="Envs to run in parallel per GPU (0 = auto = episodes_per_gpu)")
+    parser.add_argument("--macro_infer_batch", type=int, default=24,
+                        help="Max prompts per model.generate() call during rollout")
+
     # ── Checkpoint settings ──
     parser.add_argument("--output_dir", type=str, default="./grpo_textgame_checkpoints")
     parser.add_argument("--save_steps", type=int, default=50)
+    parser.add_argument("--resume_from", type=str, default=None,
+                        help="Resume training from output_dir containing training_state/ and a model checkpoint")
 
     # ── Device / quantization ──
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")

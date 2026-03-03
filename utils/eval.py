@@ -35,7 +35,7 @@ def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
 
 def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
     """
-    Evaluate the trained model on fixed initial states.
+    Evaluate the trained model on fixed initial states using parallel rollout.
 
     Args:
         trainer: CleanupGameGRPO instance.
@@ -45,7 +45,7 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
     Returns:
         (avg_reward, std_reward)
     """
-    from .rollout import run_episode
+    from .rollout import run_episode, run_parallel_episodes
 
     config = trainer.config
     accelerator = trainer.accelerator
@@ -71,22 +71,53 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
     local_rewards = []
     local_episode_times = []
 
-    for i in local_episode_indices:
+    # Determine parallel batch size for eval
+    parallel_envs = config.parallel_envs if config.parallel_envs > 0 else (
+        config.episodes_per_gpu if accelerator is not None else config.episodes_per_update
+    )
+
+    # Process local episodes in parallel batches
+    idx = 0
+    while idx < len(local_episode_indices):
+        batch_indices = local_episode_indices[idx:idx + parallel_envs]
+        batch_states = [trainer.eval_states[i] for i in batch_indices]
+
         try:
-            initial_state = trainer.eval_states[i]
-            traj = run_episode(trainer, use_ref_model=False, log_samples=False, initial_state=initial_state)
-            local_rewards.append(traj["total_reward"])
-            local_episode_times.append(traj["rollout_time"])
-            logger.info(
-                f"  GPU{process_index} Ep{i + 1}: R={traj['total_reward']:.2f}, "
-                f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
+            batch_trajs = run_parallel_episodes(
+                trainer,
+                num_envs=len(batch_states),
+                use_ref_model=False,
+                log_samples=False,
+                initial_states=batch_states,
             )
-            del traj
-            if torch.cuda.is_available() and (i + 1) % 5 == 0:
-                torch.cuda.empty_cache()
+            for j, traj in enumerate(batch_trajs):
+                ep_idx = batch_indices[j]
+                local_rewards.append(traj["total_reward"])
+                local_episode_times.append(traj["rollout_time"])
+                logger.info(
+                    f"  GPU{process_index} Ep{ep_idx + 1}: R={traj['total_reward']:.2f}, "
+                    f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
+                )
+                del traj
         except Exception as e:
-            logger.error(f"GPU {process_index}: Evaluation episode {i + 1} failed: {e}")
-            continue
+            logger.warning(f"GPU{process_index}: Parallel eval batch failed: {e}, falling back to sequential")
+            for ep_idx in batch_indices:
+                try:
+                    initial_state = trainer.eval_states[ep_idx]
+                    traj = run_episode(trainer, use_ref_model=False, log_samples=False, initial_state=initial_state)
+                    local_rewards.append(traj["total_reward"])
+                    local_episode_times.append(traj["rollout_time"])
+                    logger.info(
+                        f"  GPU{process_index} Ep{ep_idx + 1}: R={traj['total_reward']:.2f}, "
+                        f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
+                    )
+                    del traj
+                except Exception as e2:
+                    logger.error(f"GPU {process_index}: Evaluation episode {ep_idx + 1} failed: {e2}")
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        idx += len(batch_indices)
 
     # Gather results from all GPUs
     if accelerator is not None:

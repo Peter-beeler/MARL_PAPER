@@ -1,13 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=grpo_textgame
 #SBATCH --account=PAS2138
-#SBATCH --time=100:00:00
+#SBATCH --time=04:00:00
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=2
-#SBATCH --cpus-per-task=16
+#SBATCH --ntasks-per-node=8
+#SBATCH --gpus-per-node=1          # ← keep in sync with NUM_GPUS below (1 or 2)
 #SBATCH --mem=128GB
-#SBATCH --partition=quad
 #SBATCH --output=grpo_textgame_%j.out
 #SBATCH --error=grpo_textgame_%j.err
 
@@ -26,11 +24,18 @@
 
 source ~/.bashrc
 conda activate py311LLM
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Use a fixed project directory — SLURM copies the script to /var/spool,
+# so BASH_SOURCE[0] resolves to the wrong location at runtime.
+SCRIPT_DIR="/users/PAS2056/mypeter8219/Research/LLM_MARL/paper"
+cd "$SCRIPT_DIR"
 module load cuda/12.4.1
 
-# Number of GPUs (reads from SLURM allocation, default 2)
-NUM_GPUS=${SLURM_GPUS_PER_NODE:-2}
+# ══════════════════════════════════════════════════════════════════════════════
+# GPU CONFIGURATION — single knob for 1-GPU vs multi-GPU (DeepSpeed ZeRO-2)
+#   1 GPU:  set NUM_GPUS=1  AND  #SBATCH --gpus-per-node=1
+#   2 GPUs: set NUM_GPUS=2  AND  #SBATCH --gpus-per-node=2
+# ══════════════════════════════════════════════════════════════════════════════
+NUM_GPUS=1
 
 echo "=========================================="
 echo "GRPO TextGame Training (SLURM Job)"
@@ -86,11 +91,17 @@ ACTION_MODE="compound"          # "text" or "compound"
 USE_TWO_STAGE=true          # text mode: true = two-stage (thinking→word), false = single-stage
 LOGPROB_MODE="action"       # "action" or "action+thinking" (text mode only)
 
-# ── DeepSpeed ZeRO-2 ───────────────────────────────────────────────────────
-# Shards gradients and optimizer states across all GPUs (params replicated).
-# No CPU offloading — optimizer runs entirely on GPU.
-# Set to false to use plain DDP (requires larger per-GPU VRAM).
-USE_DEEPSPEED=true
+# ── DeepSpeed ZeRO-2 (auto-derived from NUM_GPUS) ─────────────────────────
+# Multi-GPU → DeepSpeed ZeRO-2 (shards grads+optimizer, params replicated).
+# Single GPU → plain accelerate (no sharding needed).
+# Override: set USE_DEEPSPEED_OVERRIDE=true/false to force.
+if [ -n "$USE_DEEPSPEED_OVERRIDE" ]; then
+    USE_DEEPSPEED=$USE_DEEPSPEED_OVERRIDE
+elif [ "$NUM_GPUS" -gt 1 ]; then
+    USE_DEEPSPEED=true
+else
+    USE_DEEPSPEED=false
+fi
 
 # ── Model ──────────────────────────────────────────────────────────────────
 MODEL_NAME="Qwen/Qwen3-4B-Instruct-2507"
@@ -100,8 +111,8 @@ THINKING_TOKENS=256         # tokens for stage 1 reasoning (more room for 4B mod
 ACTION_TOKENS=128           # tokens for stage 2 action/JSON generation
 
 # ── Training ───────────────────────────────────────────────────────────────
-TOTAL_EPISODES=2048
-EPISODES_PER_GPU=8         # episodes each GPU collects per group
+TOTAL_EPISODES=4096
+EPISODES_PER_GPU=16         # episodes each GPU collects per group
 MAX_ENV_STEPS=30
 NUM_AGENTS=3
 LEARNING_RATE=1e-5
@@ -114,17 +125,17 @@ SAMPLES_PER_MICRO_BATCH=4  # A100 40GB has headroom; lower to 3 if OOM
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
-CLEAN_REWARD=0.2            # 0.0 = disabled
+CLEAN_REWARD=0.2        # 0.0 = disabled
 
 # ── Output ────────────────────────────────────────────────────────────────
-OUTPUT_DIR="./grpo_textgame_checkpoints"
+OUTPUT_DIR="./grpo_textgame_checkpoints_compound_dirt0.2"  # will be created if it doesn't exist
 NUM_EVAL_EPISODES=20
 
 # ── Wandb ─────────────────────────────────────────────────────────────────
 USE_WANDB=true
 WANDB_PROJECT="grpo_textgame"
 WANDB_ENTITY=""             # leave empty for default account
-WANDB_RUN_NAME="${ACTION_MODE}_run"
+WANDB_RUN_NAME=$OUTPUT_DIR  # use output dir as run name for easy identification
 
 # ── Print config ──────────────────────────────────────────────────────────
 echo "Configuration:"
@@ -175,9 +186,25 @@ if [ "$ACTION_MODE" = "text" ]; then
     fi
 fi
 
-DEEPSPEED_FLAG=""
+# ── Generate accelerate config on the fly ─────────────────────────────────
+# Bypass ~/.cache/huggingface/accelerate/default_config.yaml which may have
+# stale DeepSpeed settings (missing train_micro_batch_size_per_gpu → ValueError).
+# DeepSpeed is configured entirely in Python (utils/model_setup.py) via
+# DeepSpeedPlugin — accelerate CLI must NOT enable DeepSpeed itself.
+ACCEL_CONFIG="/tmp/accelerate_config_$$.yaml"
+cat > "$ACCEL_CONFIG" <<YAML_EOF
+compute_environment: LOCAL_MACHINE
+distributed_type: MULTI_GPU
+mixed_precision: bf16
+num_machines: 1
+num_processes: ${NUM_GPUS}
+main_training_function: main
+YAML_EOF
+echo "  Accelerate config:       $ACCEL_CONFIG (MULTI_GPU, no CLI-level DeepSpeed)"
+
+DEEPSPEED_PY_FLAG=""
 if [ "$USE_DEEPSPEED" = true ]; then
-    DEEPSPEED_FLAG="--use_deepspeed"
+    DEEPSPEED_PY_FLAG="--use_deepspeed"
 fi
 
 WANDB_ARGS=""
@@ -194,11 +221,7 @@ echo "Launching accelerate with $NUM_GPUS GPUs..."
 echo ""
 
 accelerate launch \
-    --num_processes $NUM_GPUS \
-    --num_machines 1 \
-    --mixed_precision bf16 \
-    $DEEPSPEED_FLAG \
-    --zero_stage 2 \
+    --config_file "$ACCEL_CONFIG" \
     $SCRIPT_DIR/grpo_textgame.py \
     --action_mode "$ACTION_MODE" \
     $TWO_STAGE_FLAG \
@@ -220,11 +243,9 @@ accelerate launch \
     --output_dir "$OUTPUT_DIR" \
     --use_accelerate \
     --num_eval_episodes $NUM_EVAL_EPISODES \
-    --save_steps 256 \
-    --eval_interval 128 \
-    --skip_pre_eval \
+    --eval_interval 64 \
     --seed 42 \
-    $DEEPSPEED_FLAG \
+    $DEEPSPEED_PY_FLAG \
     $WANDB_ARGS \
     2>&1 | tee "$OUTPUT_DIR/training_log_${SLURM_JOB_ID:-local}.txt"
 

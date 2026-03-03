@@ -11,3 +11,20 @@ gemini_prompt_raw_output.txt
 wandb/
 checkpoints/
 **/grpo_checkpoints/
+
+# SLURM job output/error files
+*.out
+*.err
+
+# Checkpoint directories
+grpo_textgame_checkpoints*/
+
+# Logs directory
+logs/
+
+# Model files
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt

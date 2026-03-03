@@ -31,6 +31,68 @@ ACTION_WORDS = ['up', 'down', 'left', 'right', 'clean', 'eat', 'stay']
 
 
 # ─────────────────────────────────────────────
+# CHUNKED HELPERS (for parallel multi-env rollout)
+# ─────────────────────────────────────────────
+
+def _chunked_generate(gen_model, tokenizer, prompts, max_new_tokens, config, device, macro_batch):
+    """
+    Run model.generate() on a list of prompts, chunked by macro_batch.
+
+    Returns:
+        (input_ids_list, generated_ids_list, generated_texts_list)
+        All lists have length == len(prompts).
+    """
+    all_input_ids = []
+    all_gen_ids = []
+    all_gen_texts = []
+
+    for start in range(0, len(prompts), macro_batch):
+        chunk = prompts[start:start + macro_batch]
+        inputs = tokenizer(
+            chunk, return_tensors="pt", truncation=True,
+            max_length=config.max_length, padding=True
+        ).to(device)
+        if "attention_mask" not in inputs:
+            inputs["attention_mask"] = torch.ones_like(inputs["input_ids"])
+
+        with torch.no_grad():
+            outputs = gen_model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=config.temperature,
+                top_p=config.top_p,
+                top_k=config.top_k,
+                do_sample=True,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+                return_dict_in_generate=True,
+            )
+
+        for j in range(len(chunk)):
+            gen_ids = outputs.sequences[j][inputs.input_ids[j].shape[0]:]
+            gen_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
+            all_input_ids.append(inputs.input_ids[j])
+            all_gen_ids.append(gen_ids)
+            all_gen_texts.append(gen_text)
+
+    return all_input_ids, all_gen_ids, all_gen_texts
+
+
+def _chunked_log_probs(model, input_ids_list, gen_ids_list, device, pad_token_id, macro_batch):
+    """Compute log probs in chunks to limit memory."""
+    all_log_probs = []
+    for start in range(0, len(input_ids_list), macro_batch):
+        chunk_inputs = input_ids_list[start:start + macro_batch]
+        chunk_gens = gen_ids_list[start:start + macro_batch]
+        lps = compute_batch_sequence_log_prob(
+            model, chunk_inputs, chunk_gens,
+            device, pad_token_id, need_grad=False
+        )
+        all_log_probs.extend([lp for lp in lps])
+    return all_log_probs
+
+
+# ─────────────────────────────────────────────
 # TEXT MODE HELPERS
 # ─────────────────────────────────────────────
 
@@ -507,7 +569,7 @@ def generate_actions_batch(trainer, obs_dict: Dict[int, str], step: int, env, mo
             )
         return results
 
-    # ── COMPOUND BATCH ──
+    # ── COMPOUND BATCH (single env, kept for backward compat) ──
     else:  # compound
         prompts = []
         for agent_id in agent_ids:
@@ -562,5 +624,209 @@ def generate_actions_batch(trainer, obs_dict: Dict[int, str], step: int, env, mo
             results[agent_id] = (
                 actions[i], log_probs[i], responses[i], responses[i], responses[i],
                 "", input_ids_list[i], gen_ids_list[i]
+            )
+        return results
+
+
+# ─────────────────────────────────────────────
+# MULTI-ENV BATCHED GENERATION (parallel rollout)
+# ─────────────────────────────────────────────
+
+def _fallback_per_env(trainer, active_env_data, step, model):
+    """Fall back to per-env sequential generation when batched generation fails."""
+    results = {}
+    for env_idx, env, obs_dict in active_env_data:
+        results[env_idx] = generate_actions_batch(trainer, obs_dict, step, env, model)
+    return results
+
+
+def generate_actions_multi_env_batch(
+    trainer, active_env_data, step, model, macro_infer_batch=24
+):
+    """
+    Generate actions for all agents across multiple environments with chunked batching.
+
+    Flattens all (env, agent) pairs into a single prompt list, runs model.generate()
+    in chunks of macro_infer_batch, then reassembles results per env.
+
+    Args:
+        trainer: CleanupGameGRPO instance.
+        active_env_data: list of (env_idx, env, obs_dict) tuples for active envs.
+        step: Current env step.
+        model: Model to use for generation.
+        macro_infer_batch: Max prompts per model.generate() call.
+
+    Returns:
+        dict mapping env_idx -> dict mapping agent_id -> 8-tuple
+    """
+    config = trainer.config
+    tokenizer = trainer.tokenizer
+    accelerator = trainer.accelerator
+    device = trainer.device
+
+    target_device = device
+    _is_zero3 = (
+        accelerator is not None and
+        getattr(getattr(accelerator, 'state', None), 'deepspeed_plugin', None) is not None
+    )
+    gen_model = model if _is_zero3 else (
+        model.module if (accelerator is not None and hasattr(model, 'module')) else model
+    )
+
+    # Build flat list: (env_idx, agent_id, obs_text, env)
+    flat_meta = []
+    for env_idx, env, obs_dict in active_env_data:
+        for agent_id in sorted(obs_dict.keys()):
+            ot = obs_to_text(obs_dict[agent_id], env, agent_id, config)
+            flat_meta.append((env_idx, agent_id, ot, env))
+
+    N = len(flat_meta)
+    if N == 0:
+        return {}
+
+    # ── TEXT TWO-STAGE ──
+    if config.action_mode == "text" and config.use_two_stage:
+        thinking_prompts = [
+            create_thinking_prompt(m[2], m[1], config, tokenizer) for m in flat_meta
+        ]
+
+        try:
+            thinking_input_ids, thinking_gen_ids, thinking_texts = _chunked_generate(
+                gen_model, tokenizer, thinking_prompts,
+                config.thinking_tokens, config, target_device, macro_infer_batch
+            )
+        except RuntimeError as e:
+            logger.warning(f"Multi-env batch thinking failed: {e}, falling back to per-env")
+            return _fallback_per_env(trainer, active_env_data, step, model)
+
+        action_prompts = [
+            create_action_prompt(flat_meta[i][2], thinking_texts[i], config, tokenizer)
+            for i in range(N)
+        ]
+
+        try:
+            action_input_ids, action_gen_ids, action_texts = _chunked_generate(
+                gen_model, tokenizer, action_prompts,
+                config.action_tokens, config, target_device, macro_infer_batch
+            )
+        except RuntimeError as e:
+            logger.warning(f"Multi-env batch action failed: {e}, falling back to per-env")
+            return _fallback_per_env(trainer, active_env_data, step, model)
+
+        actions = [get_action_from_response(t, trainer.action_words) for t in action_texts]
+
+        try:
+            log_prob_model = trainer.old_model if trainer.old_model is not None else gen_model
+            if config.logprob_mode == "action+thinking":
+                thinking_lps = _chunked_log_probs(
+                    log_prob_model, thinking_input_ids, thinking_gen_ids,
+                    target_device, tokenizer.pad_token_id, macro_infer_batch
+                )
+                action_lps = _chunked_log_probs(
+                    log_prob_model, action_input_ids, action_gen_ids,
+                    target_device, tokenizer.pad_token_id, macro_infer_batch
+                )
+                log_probs = [t_lp + a_lp for t_lp, a_lp in zip(thinking_lps, action_lps)]
+            else:
+                log_probs = _chunked_log_probs(
+                    log_prob_model, action_input_ids, action_gen_ids,
+                    target_device, tokenizer.pad_token_id, macro_infer_batch
+                )
+        except Exception as e:
+            logger.warning(f"Multi-env batch log prob failed: {e}")
+            log_probs = [torch.tensor(-10.0, device=target_device)] * N
+
+        results = {}
+        for i in range(N):
+            env_idx, agent_id = flat_meta[i][0], flat_meta[i][1]
+            if env_idx not in results:
+                results[env_idx] = {}
+            full_response = f"{thinking_texts[i]} -> {action_texts[i]}"
+            results[env_idx][agent_id] = (
+                actions[i], log_probs[i], thinking_texts[i], full_response,
+                action_texts[i], action_prompts[i],
+                action_input_ids[i], action_gen_ids[i]
+            )
+        return results
+
+    # ── TEXT SINGLE-STAGE ──
+    elif config.action_mode == "text" and not config.use_two_stage:
+        prompts = [
+            create_single_stage_prompt_text(m[2], config, tokenizer) for m in flat_meta
+        ]
+
+        try:
+            input_ids, gen_ids, gen_texts = _chunked_generate(
+                gen_model, tokenizer, prompts,
+                config.action_tokens, config, target_device, macro_infer_batch
+            )
+        except RuntimeError as e:
+            logger.warning(f"Multi-env batch generation failed: {e}, falling back to per-env")
+            return _fallback_per_env(trainer, active_env_data, step, model)
+
+        actions = [get_action_from_response(t, trainer.action_words) for t in gen_texts]
+
+        try:
+            log_prob_model = trainer.old_model if trainer.old_model is not None else gen_model
+            log_probs = _chunked_log_probs(
+                log_prob_model, input_ids, gen_ids,
+                target_device, tokenizer.pad_token_id, macro_infer_batch
+            )
+        except Exception as e:
+            logger.warning(f"Multi-env batch log prob failed: {e}")
+            log_probs = [torch.tensor(-10.0, device=target_device)] * N
+
+        results = {}
+        for i in range(N):
+            env_idx, agent_id = flat_meta[i][0], flat_meta[i][1]
+            if env_idx not in results:
+                results[env_idx] = {}
+            results[env_idx][agent_id] = (
+                actions[i], log_probs[i], gen_texts[i], gen_texts[i], gen_texts[i],
+                "", input_ids[i], gen_ids[i]
+            )
+        return results
+
+    # ── COMPOUND ──
+    else:
+        prompts = [
+            create_single_stage_prompt_compound(m[2], config, tokenizer, m[3], m[1])
+            for m in flat_meta
+        ]
+
+        try:
+            input_ids, gen_ids, gen_texts = _chunked_generate(
+                gen_model, tokenizer, prompts,
+                config.thinking_tokens + config.action_tokens,
+                config, target_device, macro_infer_batch
+            )
+        except RuntimeError as e:
+            logger.warning(f"Multi-env batch generation failed: {e}, falling back to per-env")
+            return _fallback_per_env(trainer, active_env_data, step, model)
+
+        # Parse and execute per-env (CPU-only, fast)
+        actions = []
+        for i in range(N):
+            a = parse_and_execute_action(gen_texts[i], flat_meta[i][1], flat_meta[i][3])
+            actions.append(a)
+
+        try:
+            log_prob_model = trainer.old_model if trainer.old_model is not None else gen_model
+            log_probs = _chunked_log_probs(
+                log_prob_model, input_ids, gen_ids,
+                target_device, tokenizer.pad_token_id, macro_infer_batch
+            )
+        except Exception as e:
+            logger.warning(f"Multi-env batch log prob failed: {e}")
+            log_probs = [torch.tensor(-10.0, device=target_device)] * N
+
+        results = {}
+        for i in range(N):
+            env_idx, agent_id = flat_meta[i][0], flat_meta[i][1]
+            if env_idx not in results:
+                results[env_idx] = {}
+            results[env_idx][agent_id] = (
+                actions[i], log_probs[i], gen_texts[i], gen_texts[i], gen_texts[i],
+                "", input_ids[i], gen_ids[i]
             )
         return results
