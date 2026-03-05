@@ -24,7 +24,6 @@ def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
             max_steps=config.max_env_steps,
             seed=config.seed + 1000 + i,
             eat_reward=config.eat_reward,
-            clean_reward=config.clean_reward,
         ))
         eval_env.reset()
         state = eval_env.get_state()

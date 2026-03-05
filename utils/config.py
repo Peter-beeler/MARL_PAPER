@@ -66,7 +66,6 @@ class GRPOConfig:
     # Environment settings
     max_env_steps: int = 50
     eat_reward: float = 1.0
-    clean_reward: float = 0.0
 
     # Checkpoint settings
     output_dir: str = "./grpo_textgame_checkpoints"

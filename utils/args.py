@@ -45,8 +45,6 @@ def parse_args():
     parser.add_argument("--max_env_steps", type=int, default=20)
     parser.add_argument("--eat_reward", type=float, default=1.0,
                         help="Reward for eating an apple (default: 1.0)")
-    parser.add_argument("--clean_reward", type=float, default=0.0,
-                        help="Reward for cleaning a dirt tile (default: 0.0)")
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--old_model_update_interval", type=int, default=1,
                         help="Update old model every N groups (default: 1 = every group)")

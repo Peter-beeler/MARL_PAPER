@@ -4,7 +4,7 @@
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --gpus-per-node=1          # ← keep in sync with NUM_GPUS below (1 or 2)
+#SBATCH --gpus-per-node=2          # ← keep in sync with NUM_GPUS below (1 or 2)
 #SBATCH --mem=128GB
 #SBATCH --output=grpo_textgame_%j.out
 #SBATCH --error=grpo_textgame_%j.err
@@ -122,14 +122,13 @@ LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
 SAMPLES_PER_MICRO_BATCH=8  # A100 40GB has headroom; lower to 3 if OOM
-MACRO_INFER_BATCH=8
+MACRO_INFER_BATCH=24
 # ── Old model update frequency ────────────────────────────────────────────
-OLD_MODEL_UPDATE_INTERVAL=4  # update old model every N groups
+OLD_MODEL_UPDATE_INTERVAL=1  # update old model every N groups
 
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
-CLEAN_REWARD=0.2        # 0.0 = disabled
 
 # ── Output ────────────────────────────────────────────────────────────────
 OUTPUT_DIR="./grpo_textgame_checkpoints_compound_dirt0.2"  # will be created if it doesn't exist
@@ -161,7 +160,6 @@ echo "  Total episodes:          $TOTAL_EPISODES"
 echo "  Max env steps:           $MAX_ENV_STEPS"
 echo "  Num agents:              $NUM_AGENTS"
 echo "  Eat reward:              $EAT_REWARD"
-echo "  Clean reward:            $CLEAN_REWARD"
 echo "  Learning rate:           $LEARNING_RATE"
 echo "  Loss type:               $LOSS_TYPE"
 echo "  Output dir:              $OUTPUT_DIR"
@@ -245,7 +243,6 @@ accelerate launch \
     --micro_batch_size $SAMPLES_PER_MICRO_BATCH \
     --old_model_update_interval $OLD_MODEL_UPDATE_INTERVAL \
     --eat_reward $EAT_REWARD \
-    --clean_reward $CLEAN_REWARD \
     --output_dir "$OUTPUT_DIR" \
     --use_accelerate \
     --num_eval_episodes $NUM_EVAL_EPISODES \

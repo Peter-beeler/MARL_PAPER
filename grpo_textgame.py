@@ -37,7 +37,8 @@ from transformers import set_seed
 # ── Path setup ──
 sys.path.insert(0, os.path.dirname(__file__))
 
-from env_move import CleanupEnvMove, Config as EnvConfigMove
+from env_move import CleanupEnvMove as EvalEnvClass, Config as EnvConfigMove
+from env_copy import CleanupEnvMove as TrainEnvClass
 
 from utils.config import GRPOConfig
 from utils.model_setup import (
@@ -140,8 +141,9 @@ class CleanupGameGRPO:
             max_steps=config.max_env_steps,
             seed=config.seed,
             eat_reward=config.eat_reward,
-            clean_reward=config.clean_reward,
         )
+        self.train_env_class = TrainEnvClass
+        self.eval_env_class = EvalEnvClass
 
         # ── Training statistics ──
         self.episode_rewards = []
@@ -487,6 +489,22 @@ class CleanupGameGRPO:
                 config.episodes_per_gpu if accelerator is not None else config.episodes_per_update
             )
 
+            # Generate a unique initial state for this group so that:
+            #  - all trajectories within a group share the same init (for GRPO advantages)
+            #  - different groups get different initial states (for training diversity)
+            _group_seed = config.seed + group_num
+            if accelerator is not None:
+                _group_seed += accelerator.process_index * 10000
+            _seed_env = TrainEnvClass(EnvConfigMove(
+                n_agents=config.num_agents,
+                max_steps=config.max_env_steps,
+                seed=_group_seed,
+                eat_reward=config.eat_reward,
+            ))
+            _seed_env.reset()
+            group_init_state = _seed_env.get_state()
+            del _seed_env
+
             if accelerator is not None:
                 total_needed = config.episodes_per_gpu
                 trajectories = []
@@ -503,7 +521,7 @@ class CleanupGameGRPO:
                             self, num_envs=batch_size,
                             use_ref_model=False,
                             log_samples=log_samples_flag,
-                            same_init_state=True,
+                            initial_states=[group_init_state] * batch_size,
                         )
                         trajectories.extend(batch_trajs)
                         for j, traj in enumerate(batch_trajs):
@@ -520,7 +538,8 @@ class CleanupGameGRPO:
                         # Fall back to sequential for this batch
                         for i in range(batch_size):
                             try:
-                                traj = run_episode(self, use_ref_model=False, log_samples=False)
+                                traj = run_episode(self, use_ref_model=False, log_samples=False,
+                                                   initial_state=group_init_state)
                                 trajectories.append(traj)
                             except Exception as e2:
                                 logger.error(f"  Fallback episode also failed: {e2}")
@@ -538,7 +557,7 @@ class CleanupGameGRPO:
                             self, num_envs=batch_size,
                             use_ref_model=False,
                             log_samples=log_samples_flag,
-                            same_init_state=True,
+                            initial_states=[group_init_state] * batch_size,
                         )
                         trajectories.extend(batch_trajs)
                         for j, traj in enumerate(batch_trajs):
@@ -551,7 +570,8 @@ class CleanupGameGRPO:
                         logger.error(f"Parallel batch {batch_idx} failed: {e}", exc_info=True)
                         for i in range(batch_size):
                             try:
-                                traj = run_episode(self, use_ref_model=False, log_samples=False)
+                                traj = run_episode(self, use_ref_model=False, log_samples=False,
+                                                   initial_state=group_init_state)
                                 trajectories.append(traj)
                             except Exception as e2:
                                 logger.error(f"Fallback episode failed: {e2}")
@@ -930,7 +950,6 @@ def main():
         num_agents=args.num_agents,
         max_env_steps=args.max_env_steps,
         eat_reward=args.eat_reward,
-        clean_reward=args.clean_reward,
         learning_rate=args.learning_rate,
         output_dir=args.output_dir,
         device=args.device,

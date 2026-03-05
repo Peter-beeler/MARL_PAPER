@@ -37,12 +37,14 @@ def run_episode(
             action_input_ids, action_ids,
             total_reward, final_scores, steps, rollout_time
     """
-    from env_move import CleanupEnvMove
+    EnvClass = getattr(trainer, 'train_env_class', None)
+    if EnvClass is None:
+        from env_move import CleanupEnvMove as EnvClass
 
     start_time = time.time()
     config = trainer.config
 
-    env = CleanupEnvMove(trainer.env_config)
+    env = EnvClass(trainer.env_config)
     if initial_state is not None:
         env.set_state(initial_state)
         obs = env._observation()
@@ -160,7 +162,9 @@ def run_parallel_episodes(
     Returns:
         List of num_envs trajectory dicts (same format as run_episode).
     """
-    from env_move import CleanupEnvMove
+    EnvClass = getattr(trainer, 'train_env_class', None)
+    if EnvClass is None:
+        from env_move import CleanupEnvMove as EnvClass
     from .generation import generate_actions_multi_env_batch
 
     start_time = time.time()
@@ -168,7 +172,7 @@ def run_parallel_episodes(
     macro_infer_batch = getattr(config, 'macro_infer_batch', 24)
 
     # Create and reset environments
-    envs = [CleanupEnvMove(trainer.env_config) for _ in range(num_envs)]
+    envs = [EnvClass(trainer.env_config) for _ in range(num_envs)]
     obs_list = []
 
     if initial_states is not None:
