@@ -122,7 +122,7 @@ LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
 SAMPLES_PER_MICRO_BATCH=8  # A100 40GB has headroom; lower to 3 if OOM
-
+MACRO_INFER_BATCH=8
 # ── Old model update frequency ────────────────────────────────────────────
 OLD_MODEL_UPDATE_INTERVAL=4  # update old model every N groups
 

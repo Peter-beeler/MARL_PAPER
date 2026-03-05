@@ -193,6 +193,7 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
     """
     from env_move import CleanupEnvMove
     from .generation import generate_actions_batch
+    # === TODO: observation.py must be implemented before this works ===
     from .observation import obs_to_text
 
     config = trainer.config

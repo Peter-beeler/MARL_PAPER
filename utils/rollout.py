@@ -9,6 +9,7 @@ import torch
 from typing import Dict, List, Optional
 
 from .generation import generate_actions_batch
+# === TODO: observation.py must be implemented before this file works ===
 from .observation import obs_to_text
 
 logger = logging.getLogger(__name__)
@@ -307,6 +308,7 @@ def _get_stored_prompt(trainer, obs, agent_id, step, env):
     For two-stage text mode: store thinking prompt.
     For all other modes: store the single-stage prompt.
     """
+    # === TODO: observation.py and prompts.py must be implemented before this works ===
     from .observation import obs_to_text
     from .prompts import create_thinking_prompt, create_single_stage_prompt_text, create_single_stage_prompt_compound
 

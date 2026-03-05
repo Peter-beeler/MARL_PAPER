@@ -17,13 +17,14 @@ import torch
 from typing import Dict, List, Optional, Tuple
 
 from .logprob import compute_batch_sequence_log_prob
-from .observation import (
-    obs_to_text, move_to, clean_at, eat_at, random_explore,
-)
+# === TODO: observation.py and prompts.py must be implemented before this file works ===
+from .observation import obs_to_text
 from .prompts import (
     create_thinking_prompt, create_action_prompt,
     create_single_stage_prompt_text, create_single_stage_prompt_compound,
 )
+# Action dispatch uses dynamic lookup — no need to import individual actions
+from . import observation as _obs_module
 
 logger = logging.getLogger(__name__)
 
@@ -114,12 +115,21 @@ def get_action_from_response(response: str, action_words: List[str] = None) -> s
 # COMPOUND MODE HELPERS
 # ─────────────────────────────────────────────
 
+def _get_fallback_action(env, agent_id) -> str:
+    """Return a fallback action when JSON parsing fails. Uses 'stay' by default."""
+    # === TODO: change this if your game has a different default/fallback action ===
+    return "stay"
+
+
 def parse_and_execute_action(response: str, agent_id: int, env) -> str:
     """
     Parse JSON from model response, call the appropriate helper, return low-level env action.
 
+    Expected JSON format from LLM:
+        {"action": "<name>", "agent_id": N, "args": {"key": value, ...}}
+
     Returns:
-        Low-level action string: up/down/left/right/clean/eat/stay.
+        Low-level action string understood by env.step().
     """
     response = response.strip()
     logger.debug(f"Raw model action response: {response}")
@@ -132,9 +142,8 @@ def parse_and_execute_action(response: str, agent_id: int, env) -> str:
         # Step 2: balanced-brace extraction
         start = response.find('{')
         if start == -1:
-            logger.debug(f"No JSON found in response: '{response[:80]}', falling back to random_explore")
-            action, _ = random_explore(env, agent_id)
-            return action
+            logger.debug(f"No JSON found in response: '{response[:80]}', using fallback")
+            return _get_fallback_action(env, agent_id)
         depth = 0
         end = -1
         for i in range(start, len(response)):
@@ -146,9 +155,8 @@ def parse_and_execute_action(response: str, agent_id: int, env) -> str:
                     end = i
                     break
         if end == -1:
-            logger.debug(f"Unbalanced braces in response: '{response[:80]}', falling back to random_explore")
-            action, _ = random_explore(env, agent_id)
-            return action
+            logger.debug(f"Unbalanced braces in response: '{response[:80]}', using fallback")
+            return _get_fallback_action(env, agent_id)
         json_str = response[start:end + 1]
 
     try:
@@ -156,24 +164,27 @@ def parse_and_execute_action(response: str, agent_id: int, env) -> str:
         action_name = data.get('action', '')
         args = data.get('args', {})
 
-        if action_name == 'move_to':
-            action, _ = move_to(env, agent_id, int(args.get('coord_x', 0)), int(args.get('coord_y', 0)))
-        elif action_name == 'clean_at':
-            action, _ = clean_at(env, agent_id, int(args.get('coord_x', 0)), int(args.get('coord_y', 0)))
-        elif action_name == 'eat_at':
-            action, _ = eat_at(env, agent_id, int(args.get('coord_x', 0)), int(args.get('coord_y', 0)))
-        elif action_name == 'random_explore':
-            action, _ = random_explore(env, agent_id)
+        # === TODO: this dispatch calls your high-level actions from observation.py ===
+        # === TODO: update it to match the actions you defined there ===
+        action_fn = getattr(_obs_module, action_name, None)
+        if action_fn is not None and callable(action_fn):
+            # Convert args values to int where possible (coords are ints)
+            typed_args = {}
+            for k, v in args.items():
+                try:
+                    typed_args[k] = int(v)
+                except (ValueError, TypeError):
+                    typed_args[k] = v
+            action, _ = action_fn(env, agent_id, **typed_args)
         else:
-            logger.debug(f"Unknown action name: '{action_name}', falling back to random_explore")
-            action, _ = random_explore(env, agent_id)
+            logger.debug(f"Unknown action name: '{action_name}', using fallback")
+            action = _get_fallback_action(env, agent_id)
 
         return action
 
     except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
-        logger.debug(f"Failed to parse JSON action: {e}, falling back to random_explore")
-        action, _ = random_explore(env, agent_id)
-        return action
+        logger.debug(f"Failed to parse JSON action: {e}, using fallback")
+        return _get_fallback_action(env, agent_id)
 
 
 # ─────────────────────────────────────────────

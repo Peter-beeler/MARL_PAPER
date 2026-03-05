@@ -88,6 +88,8 @@ class CleanupGameGRPO:
         self.tokenizer = load_tokenizer(config)
 
         # ── Mode-specific setup ──
+        # === TODO: update action_words to match the low-level actions in your game env ===
+        # === TODO: update helper_functions to match the high-level actions in observation.py ===
         if config.action_mode == "text":
             self.action_words = ['up', 'down', 'left', 'right', 'clean', 'eat', 'stay']
             self.action_logits_processor = AllowOnlyActionWords(self.tokenizer, self.action_words)

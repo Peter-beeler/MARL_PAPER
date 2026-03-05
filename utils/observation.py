@@ -1,6 +1,13 @@
 """
-Observation-to-text functions for both text mode (coordinate-based local window)
-and compound mode (global scan with nearest-item helpers).
+Observation-to-text conversion and high-level action helpers.
+
+This file contains two categories of functions:
+  1. Observation converters — turn raw env state into natural-language text
+  2. High-level actions — callable helpers that map to low-level env actions
+
+Both text mode and compound mode need their own implementations.
+Read the game environment file to understand the grid layout, items, agents,
+coordinate system, and available low-level actions before implementing.
 """
 
 import random
@@ -8,246 +15,68 @@ from typing import Any, Dict, Tuple
 
 
 # ─────────────────────────────────────────────
-# TEXT MODE
+# TEXT MODE: observation converter
 # ─────────────────────────────────────────────
 
 def parse_observation_to_coords(obs: str, agent_id: int, env) -> str:
     """
-    Convert local observation to coordinate-based format (text mode).
-
-    Transforms internal coordinates (y=0 at top) to display coordinates (y=0 at bottom).
+    Convert the environment state into a coordinate-based text description
+    for text mode (local observation window).
 
     Args:
-        obs: Raw observation string (unused - env is used directly).
+        obs: Raw observation string (may be unused — env is the source of truth).
         agent_id: Agent ID.
-        env: CleanupEnvMove instance.
+        env: Game environment instance.
 
     Returns:
-        Natural-language string like "You at (2,3). Dirt at (2,4). Apple at (1,3)."
+        Natural-language string describing the agent's position and nearby objects/agents.
     """
-    agent_pos = env.agents[agent_id]
-    ax, ay_internal = agent_pos
-    ay_display = (env.height - 1) - ay_internal
-
-    half_w, half_h = 2, 1
-    y0 = max(0, ay_internal - half_h)
-    y1 = min(env.height - 1, ay_internal + half_h)
-    x0 = max(0, ax - half_w)
-    x1 = min(env.width - 1, ax + half_w)
-
-    dirt_coords = []
-    apple_coords = []
-
-    for y_internal in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            if env.items[y_internal][x] == '#':
-                y_display = (env.height - 1) - y_internal
-                dirt_coords.append((x, y_display))
-            elif env.items[y_internal][x] == 'a':
-                y_display = (env.height - 1) - y_internal
-                apple_coords.append((x, y_display))
-
-    other_agents_info = []
-    for other_id, (ox, oy_internal) in env.agents.items():
-        if other_id == agent_id:
-            continue
-        if x0 <= ox <= x1 and y0 <= oy_internal <= y1:
-            oy_display = (env.height - 1) - oy_internal
-            if hasattr(env, 'get_agent_movement'):
-                direction, (prev_x, prev_y) = env.get_agent_movement(other_id)
-                if direction == "STAYED":
-                    other_agents_info.append(f"Agent {other_id} at ({ox},{oy_display}) [stayed]")
-                else:
-                    other_agents_info.append(
-                        f"Agent {other_id} at ({ox},{oy_display}) [moved {direction} from ({prev_x},{prev_y})]"
-                    )
-            else:
-                other_agents_info.append(f"Agent {other_id} at ({ox},{oy_display})")
-
-    obs_text = f"You at ({ax},{ay_display})."
-    if dirt_coords:
-        obs_text += f" Dirt at {', '.join([f'({x},{y})' for x, y in dirt_coords])}."
-    if apple_coords:
-        obs_text += f" Apple at {', '.join([f'({x},{y})' for x, y in apple_coords])}."
-    if other_agents_info:
-        obs_text += " " + " ".join(other_agents_info) + "."
-    if not dirt_coords and not apple_coords and not other_agents_info:
-        obs_text += " Nothing in your view."
-
-    return obs_text
+    # === TODO: implement text-mode observation-to-text ===
+    raise NotImplementedError
 
 
 # ─────────────────────────────────────────────
-# COMPOUND MODE: helpers (from archive/helpers.py)
+# COMPOUND MODE: observation converter
 # ─────────────────────────────────────────────
 
 def get_observation_description(env: Any, agent_id: int) -> str:
     """
-    Generate a natural-language description of the agent's position and visible objects
-    within its local observation window (5x3). Used by compound mode.
+    Generate a natural-language description of the agent's surroundings
+    for compound mode.
+
+    Args:
+        env: Game environment instance.
+        agent_id: Agent ID.
+
+    Returns:
+        Natural-language string describing position and visible objects/agents.
     """
-    if agent_id not in env.agents:
-        return "You are not in the environment."
-
-    ax, ay = env.agents[agent_id]
-
-    half_w, half_h = 2, 1
-    x_min = max(0, ax - half_w)
-    x_max = min(env.width - 1, ax + half_w)
-    y_min = max(0, ay - half_h)
-    y_max = min(env.height - 1, ay + half_h)
-
-    visible_objects = []
-
-    for y in range(y_min, y_max + 1):
-        for x in range(x_min, x_max + 1):
-            item = env.items[y][x]
-            if item == 'a':
-                visible_objects.append(f"an apple at ({x}, {y})")
-            elif item == '#':
-                visible_objects.append(f"dirt at ({x}, {y})")
-
-            for other_id, pos in env.agents.items():
-                if other_id != agent_id and pos == (x, y):
-                    visible_objects.append(f"agent {other_id} at ({x}, {y})")
-
-    desc = f"You are at ({ax}, {ay})."
-    if not visible_objects:
-        desc += " You see nothing of interest nearby."
-    else:
-        if len(visible_objects) == 1:
-            desc += f" You see {visible_objects[0]}."
-        else:
-            joined = ", ".join(visible_objects[:-1]) + f" and {visible_objects[-1]}"
-            desc += f" You see {joined}."
-
-    return desc
+    # === TODO: implement compound-mode observation-to-text ===
+    raise NotImplementedError
 
 
-def find_nearest_apple(env: Any, agent_id: int) -> Dict:
-    """Locate the nearest apple ('a') globally. Returns dict with found/coord_x/coord_y/distance."""
-    if agent_id not in env.agents:
-        return {'found': False}
-
-    ax, ay = env.agents[agent_id]
-    nearest_dist = float('inf')
-    nearest_pos = None
-
-    for y in range(env.height):
-        for x in range(env.width):
-            if env.items[y][x] == 'a':
-                dist = abs(x - ax) + abs(y - ay)
-                if dist < nearest_dist:
-                    nearest_dist = dist
-                    nearest_pos = (x, y)
-
-    if nearest_pos:
-        return {'found': True, 'coord_x': nearest_pos[0], 'coord_y': nearest_pos[1], 'distance': nearest_dist}
-    return {'found': False}
+# ─────────────────────────────────────────────
+# COMPOUND MODE: global scan helpers
+# ─────────────────────────────────────────────
+# Add any global-scan or information-gathering helpers here.
+# These are NOT actions — they provide extra context to the prompt builder.
+# Each should return a dict with at least a 'found' (bool) key.
+#
+# === TODO: implement scan/info helpers relevant to your game ===
 
 
-def find_nearest_dirt(env: Any, agent_id: int) -> Dict:
-    """Locate the nearest dirt ('#') globally. Returns dict with found/coord_x/coord_y/distance."""
-    if agent_id not in env.agents:
-        return {'found': False}
-
-    ax, ay = env.agents[agent_id]
-    nearest_dist = float('inf')
-    nearest_pos = None
-
-    for y in range(env.height):
-        for x in range(env.width):
-            if env.items[y][x] == '#':
-                dist = abs(x - ax) + abs(y - ay)
-                if dist < nearest_dist:
-                    nearest_dist = dist
-                    nearest_pos = (x, y)
-
-    if nearest_pos:
-        return {'found': True, 'coord_x': nearest_pos[0], 'coord_y': nearest_pos[1], 'distance': nearest_dist}
-    return {'found': False}
-
-
-def move_to(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
-    """
-    Calculate the next step to move towards a target coordinate.
-    Returns (action_string, is_done).
-    """
-    if agent_id not in env.agents:
-        return "stay", True
-
-    curr_x, curr_y = env.agents[agent_id]
-    if curr_x == coord_x and curr_y == coord_y:
-        return "stay", True
-
-    if curr_x < coord_x:
-        return "right", False
-    elif curr_x > coord_x:
-        return "left", False
-    elif curr_y < coord_y:
-        return "down", False
-    elif curr_y > coord_y:
-        return "up", False
-
-    return "stay", False
-
-
-def clean_at(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
-    """
-    Move to the target coordinate and clean it.
-    Returns (action_string, is_done).
-    """
-    if agent_id not in env.agents:
-        return "stay", True
-
-    curr_x, curr_y = env.agents[agent_id]
-    if (curr_x, curr_y) != (coord_x, coord_y):
-        if curr_x < coord_x:
-            return "right", False
-        elif curr_x > coord_x:
-            return "left", False
-        elif curr_y < coord_y:
-            return "down", False
-        elif curr_y > coord_y:
-            return "up", False
-
-    item = env.items[curr_y][curr_x]
-    if item == '#':
-        return "clean", False
-    else:
-        return "stay", True
-
-
-def eat_at(env: Any, agent_id: int, coord_x: int, coord_y: int) -> Tuple[str, bool]:
-    """
-    Move to the target coordinate and eat an apple.
-    Returns (action_string, is_done).
-    """
-    if agent_id not in env.agents:
-        return "stay", True
-
-    curr_x, curr_y = env.agents[agent_id]
-    if (curr_x, curr_y) != (coord_x, coord_y):
-        if curr_x < coord_x:
-            return "right", False
-        elif curr_x > coord_x:
-            return "left", False
-        elif curr_y < coord_y:
-            return "down", False
-        elif curr_y > coord_y:
-            return "up", False
-
-    item = env.items[curr_y][curr_x]
-    if item == 'a':
-        return "eat", False
-    else:
-        return "stay", True
-
-
-def random_explore(env: Any, agent_id: int) -> Tuple[str, bool]:
-    """Return a random movement action. is_done is always False."""
-    actions = ["up", "down", "left", "right"]
-    return random.choice(actions), False
+# ─────────────────────────────────────────────
+# HIGH-LEVEL ACTIONS (used by compound mode)
+# ─────────────────────────────────────────────
+# Each high-level action is called via JSON from the LLM:
+#   {"action": "<name>", "agent_id": 1, "args": {"key": value, ...}}
+#
+# Every action function must follow this signature:
+#   def action_name(env, agent_id, **kwargs) -> Tuple[str, bool]
+# and return:
+#   (low_level_action_string, is_done)
+#
+# === TODO: implement high-level actions relevant to your game ===
 
 
 # ─────────────────────────────────────────────
@@ -260,7 +89,7 @@ def obs_to_text(obs: str, env, agent_id: int, config) -> str:
 
     Args:
         obs: Raw observation string.
-        env: CleanupEnvMove instance.
+        env: Game environment instance.
         agent_id: Agent ID.
         config: GRPOConfig.
 
