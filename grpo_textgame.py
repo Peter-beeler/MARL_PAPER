@@ -451,6 +451,7 @@ class CleanupGameGRPO:
                     f"[Multi-GPU] {accelerator.num_processes} GPUs × {config.episodes_per_gpu} eps/GPU "
                     f"= {eps_per_group} per group"
                 )
+            logger.info(f"[Old Model Update] every {config.old_model_update_interval} groups")
             logger.info("=" * 70 + "\n")
 
         if resume_metadata:
@@ -475,8 +476,9 @@ class CleanupGameGRPO:
                 )
                 logger.info(f"\n[Group {group_num}] Episodes {episode}-{episode + expected_episodes - 1} (expected)")
 
-            # Step 1: Update old model
-            self.update_old_model()
+            # Step 1: Update old model every N groups
+            if group_num % config.old_model_update_interval == 0:
+                self.update_old_model()
 
             # Step 2: Collect trajectories (parallel envs)
             parallel_envs = config.parallel_envs if config.parallel_envs > 0 else (
@@ -940,6 +942,7 @@ def main():
         minibatch_size=args.minibatch_size,
         samples_per_micro_batch=args.samples_per_micro_batch,
         micro_batch_size=args.micro_batch_size,
+        old_model_update_interval=args.old_model_update_interval,
         eval_interval=args.eval_interval,
         num_eval_episodes=args.num_eval_episodes,
         log_trajectory=args.log_trajectory,

@@ -60,6 +60,9 @@ class GRPOConfig:
     micro_batch_size: int = 8        # DEPRECATED - use samples_per_micro_batch
     samples_per_micro_batch: int = 2
 
+    # Old model update frequency
+    old_model_update_interval: int = 1  # update old model every N groups (1 = every group)
+
     # Environment settings
     max_env_steps: int = 50
     eat_reward: float = 1.0

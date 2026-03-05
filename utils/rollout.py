@@ -60,6 +60,7 @@ def run_episode(
         "observations": [],
         "action_input_ids": [],
         "action_ids": [],
+        "global_states": [],
     }
 
     if use_ref_model and getattr(trainer, 'ref_model', None) is None:
@@ -71,6 +72,7 @@ def run_episode(
     total_reward = 0.0
 
     for step in range(config.max_env_steps):
+        trajectory["global_states"].append(env.render())
         actions = {}
         batch_results = generate_actions_batch(trainer, obs, step, env, model)
 
@@ -200,6 +202,7 @@ def run_parallel_episodes(
             "action_prompts": [], "action_texts": [],
             "rewards": [], "log_probs": [], "agent_ids": [],
             "observations": [], "action_input_ids": [], "action_ids": [],
+            "global_states": [],
         })
 
     active_mask = [True] * num_envs
@@ -211,6 +214,10 @@ def run_parallel_episodes(
         active_indices = [i for i in range(num_envs) if active_mask[i]]
         if not active_indices:
             break
+
+        # Capture global state (rendered grid) before actions
+        for i in active_indices:
+            trajectories[i]["global_states"].append(envs[i].render())
 
         # Build active env data for batched generation
         active_env_data = [(i, envs[i], obs_list[i]) for i in active_indices]
@@ -344,8 +351,16 @@ def log_episode_to_file(config, trajectory: Dict, group_num: int, episode_idx: i
         num_agents = config.num_agents
         num_steps = trajectory['steps']
 
+        global_states = trajectory.get('global_states', [])
+
         for step in range(num_steps):
             f.write(f"--- Step {step + 1} ---\n")
+
+            if step < len(global_states):
+                f.write(f"  Global State:\n")
+                for line in global_states[step].split('\n'):
+                    f.write(f"    {line}\n")
+                f.write("\n")
 
             for agent_idx in range(num_agents):
                 idx = step * num_agents + agent_idx

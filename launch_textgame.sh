@@ -35,7 +35,7 @@ module load cuda/12.4.1
 #   1 GPU:  set NUM_GPUS=1  AND  #SBATCH --gpus-per-node=1
 #   2 GPUs: set NUM_GPUS=2  AND  #SBATCH --gpus-per-node=2
 # ══════════════════════════════════════════════════════════════════════════════
-NUM_GPUS=1
+NUM_GPUS=2
 
 echo "=========================================="
 echo "GRPO TextGame Training (SLURM Job)"
@@ -121,7 +121,11 @@ LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 # ── Inner optimization (PPO-style) ─────────────────────────────────────────
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
-SAMPLES_PER_MICRO_BATCH=4  # A100 40GB has headroom; lower to 3 if OOM
+SAMPLES_PER_MICRO_BATCH=8  # A100 40GB has headroom; lower to 3 if OOM
+
+# ── Old model update frequency ────────────────────────────────────────────
+OLD_MODEL_UPDATE_INTERVAL=4  # update old model every N groups
+
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
@@ -152,6 +156,7 @@ echo "  Total episodes/group:    $((NUM_GPUS * EPISODES_PER_GPU))"
 echo "  Inner epochs:            $NUM_INNER_EPOCHS"
 echo "  Minibatch size:          $MINIBATCH_SIZE"
 echo "  Micro-batch size:        $SAMPLES_PER_MICRO_BATCH"
+echo "  Old model update:        every $OLD_MODEL_UPDATE_INTERVAL groups"
 echo "  Total episodes:          $TOTAL_EPISODES"
 echo "  Max env steps:           $MAX_ENV_STEPS"
 echo "  Num agents:              $NUM_AGENTS"
@@ -238,6 +243,7 @@ accelerate launch \
     --num_inner_epochs $NUM_INNER_EPOCHS \
     --minibatch_size $MINIBATCH_SIZE \
     --micro_batch_size $SAMPLES_PER_MICRO_BATCH \
+    --old_model_update_interval $OLD_MODEL_UPDATE_INTERVAL \
     --eat_reward $EAT_REWARD \
     --clean_reward $CLEAN_REWARD \
     --output_dir "$OUTPUT_DIR" \
