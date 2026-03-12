@@ -186,6 +186,130 @@ def create_single_stage_prompt_compound(
 
 
 # ─────────────────────────────────────────────
+# ROLE-SPECIFIC COMPOUND PROMPTS
+# ─────────────────────────────────────────────
+
+EATER_COMPOUND_CONTEXT = (
+    "You play a grid cleanup game — role: EATER.\n"
+    "Your job: find and eat apples on land for +{eat_reward} reward each.\n"
+    "Grid: {width}x{height}, land(*) with river(water x) in center (cols 6-8).\n"
+    "Apples spawn on land when dirt decreases. More cleaning = more apples.\n"
+    "Coords: (x,y), y increases upward.\n"
+    "Available actions (output as JSON):\n"
+    '- move_to: move toward target. {{"action":"move_to","args":{{"coord_x":X,"coord_y":Y}}}}\n'
+    '- eat_at: move to apple and eat it. {{"action":"eat_at","args":{{"coord_x":X,"coord_y":Y}}}}\n'
+    '- random_explore: random move. {{"action":"random_explore","args":{{}}}}\n'
+    '- find_nearest_apples: scan map for nearest apples (costs 1 step, results in next obs). '
+    '{{"action":"find_nearest_apples","args":{{}}}}\n'
+    "Think briefly, then output ONE JSON action."
+)
+
+CLEANER_COMPOUND_CONTEXT = (
+    "You play a grid cleanup game — role: CLEANER.\n"
+    "Your job: navigate to dirt on the river and clean it.\n"
+    "Grid: {width}x{height}, land(*) with river(water x) in center (cols 6-8).\n"
+    "Cleaning dirt enables apple spawning for the team. No immediate reward.\n"
+    "Coords: (x,y), y increases upward.\n"
+    "Available actions (output as JSON):\n"
+    '- move_to: move toward target. {{"action":"move_to","args":{{"coord_x":X,"coord_y":Y}}}}\n'
+    '- clean_at: move to dirt and clean it. {{"action":"clean_at","args":{{"coord_x":X,"coord_y":Y}}}}\n'
+    '- random_explore: random move. {{"action":"random_explore","args":{{}}}}\n'
+    '- find_nearest_dirts: scan map for nearest dirts (costs 1 step, results in next obs). '
+    '{{"action":"find_nearest_dirts","args":{{}}}}\n'
+    "Think briefly, then output ONE JSON action."
+)
+
+ROLE_ASSIGNMENT_SYSTEM = (
+    "You are a coordinator for a cooperative multi-agent game.\n"
+    "Agents clean a river (removing dirt '#') and eat apples ('a') on land.\n"
+    "Cleaning dirt enables apple spawning. Eating apples gives reward.\n\n"
+    "Decision guidelines:\n"
+    "- Look at how much dirt remains vs the initial amount. "
+    "If dirt is still high (>50% of initial), most agents should be cleaners.\n"
+    "- Look at how many apples are available. "
+    "If many apples are on the map, shift more agents to eaters.\n"
+    "- If dirt is low and apples are plentiful, only keep 1 cleaner and make the rest eaters.\n"
+    "- If dirt is high and no apples exist, make most agents cleaners (e.g. 3-4 out of 5).\n"
+    "- At least 1 agent should always be a cleaner if any dirt remains.\n\n"
+    "Output ONLY a JSON object mapping agent_id (as string) to role."
+)
+
+
+def create_role_compound_prompt(
+    obs_text: str, config, tokenizer, env=None, agent_id: int = 0, role: str = "eater"
+) -> str:
+    """
+    Role-specific compound prompt. Uses eater or cleaner context + actions.
+    Observation text should already include role info, tool results, continuation hints.
+    """
+    from .observation import scan_dirt_count, scan_apple_count
+
+    if role == "eater":
+        system_msg = EATER_COMPOUND_CONTEXT.format(
+            eat_reward=config.eat_reward,
+            width=env.width if env else 15,
+            height=env.height if env else 9,
+        )
+    else:
+        system_msg = CLEANER_COMPOUND_CONTEXT.format(
+            eat_reward=config.eat_reward,
+            width=env.width if env else 15,
+            height=env.height if env else 9,
+        )
+
+    # Add global scan info to user message
+    extra = []
+    if env is not None:
+        dc = scan_dirt_count(env, agent_id)
+        ac = scan_apple_count(env, agent_id)
+        extra.append(f"Total dirt: {dc['count']}, Total apples: {ac['count']}")
+
+    user_content = f"Observation: {obs_text}"
+    if extra:
+        user_content += "\nGlobal info: " + ". ".join(extra) + "."
+
+    messages = [
+        {"role": "system", "content": system_msg},
+        {"role": "user", "content": user_content},
+    ]
+    return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+
+def create_role_assignment_prompt(
+    global_context: str, current_roles: dict, num_agents: int, tokenizer
+) -> str:
+    """Build prompt for the role-assignment meta-call. Returns chat-template string.
+
+    Disables Qwen3 thinking mode (enable_thinking=False) so the model outputs
+    JSON directly without consuming tokens on <think> tags.
+    """
+    user_content = (
+        f"CURRENT GAME STATE:\n{global_context}\n\n"
+        f"You have {num_agents} agents (IDs 1 to {num_agents}). "
+        f"Based on the dirt count, apple count, and initial dirt amount above, "
+        f"decide from scratch how many agents should be cleaners vs eaters, "
+        f"then assign each agent a role.\n"
+        f"Output a JSON object like: "
+        f'{{"1": "eater", "2": "cleaner", "3": "eater", ...}}\n'
+        f"Only output the JSON, nothing else."
+    )
+    messages = [
+        {"role": "system", "content": ROLE_ASSIGNMENT_SYSTEM},
+        {"role": "user", "content": user_content},
+    ]
+    # Try with enable_thinking=False (Qwen3); fall back for other tokenizers
+    try:
+        return tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True,
+            enable_thinking=False
+        )
+    except TypeError:
+        return tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+
+
+# ─────────────────────────────────────────────
 # DISPATCH
 # ─────────────────────────────────────────────
 

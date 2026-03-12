@@ -120,33 +120,44 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
 
     # Gather results from all GPUs
     if accelerator is not None:
-        model_device = next(trainer.model.parameters()).device
-        local_len = len(local_rewards)
-        max_len_tensor = torch.tensor([local_len], dtype=torch.long, device=model_device)
-        all_lens = accelerator.gather(max_len_tensor)
+        # Barrier ensures all ranks finished rollouts before gather
+        try:
+            accelerator.wait_for_everyone()
+        except Exception as e:
+            logger.warning(f"Barrier failed during eval gather: {e}")
 
-        max_len = all_lens.max().item()
-        local_rewards_padded = local_rewards + [0.0] * (max_len - len(local_rewards))
-        local_times_padded = local_episode_times + [0.0] * (max_len - len(local_episode_times))
+        try:
+            model_device = next(trainer.model.parameters()).device
+            local_len = len(local_rewards)
+            max_len_tensor = torch.tensor([local_len], dtype=torch.long, device=model_device)
+            all_lens = accelerator.gather(max_len_tensor)
 
-        all_rewards = accelerator.gather(
-            torch.tensor(local_rewards_padded, dtype=torch.float32, device=model_device)
-        )
-        all_times = accelerator.gather(
-            torch.tensor(local_times_padded, dtype=torch.float32, device=model_device)
-        )
+            max_len = all_lens.max().item()
+            local_rewards_padded = local_rewards + [0.0] * (max_len - len(local_rewards))
+            local_times_padded = local_episode_times + [0.0] * (max_len - len(local_episode_times))
 
-        if accelerator.is_main_process:
-            rewards = []
-            episode_times = []
-            for proc_idx in range(accelerator.num_processes):
-                start_idx = proc_idx * max_len
-                actual_len = all_lens[proc_idx].item()
-                rewards.extend(all_rewards.cpu().tolist()[start_idx:start_idx + actual_len])
-                episode_times.extend(all_times.cpu().tolist()[start_idx:start_idx + actual_len])
-        else:
-            rewards = []
-            episode_times = []
+            all_rewards = accelerator.gather(
+                torch.tensor(local_rewards_padded, dtype=torch.float32, device=model_device)
+            )
+            all_times = accelerator.gather(
+                torch.tensor(local_times_padded, dtype=torch.float32, device=model_device)
+            )
+
+            if accelerator.is_main_process:
+                rewards = []
+                episode_times = []
+                for proc_idx in range(accelerator.num_processes):
+                    start_idx = proc_idx * max_len
+                    actual_len = all_lens[proc_idx].item()
+                    rewards.extend(all_rewards.cpu().tolist()[start_idx:start_idx + actual_len])
+                    episode_times.extend(all_times.cpu().tolist()[start_idx:start_idx + actual_len])
+            else:
+                rewards = []
+                episode_times = []
+        except Exception as e:
+            logger.warning(f"Gather failed during eval: {e}, using local results only")
+            rewards = local_rewards
+            episode_times = local_episode_times
     else:
         rewards = local_rewards
         episode_times = local_episode_times

@@ -2,15 +2,16 @@
 Episode rollout, trajectory logging, and multi-GPU gathering.
 """
 
+import json
 import os
 import logging
+import re
 import time
 import torch
 from typing import Dict, List, Optional
 
 from .generation import generate_actions_batch
-# === TODO: observation.py must be implemented before this file works ===
-from .observation import obs_to_text
+from .observation import obs_to_text, pop_tool_result
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,8 @@ def run_episode(
         "action_input_ids": [],
         "action_ids": [],
         "global_states": [],
+        "roles": [],
+        "role_switches": [],
     }
 
     if use_ref_model and getattr(trainer, 'ref_model', None) is None:
@@ -134,6 +137,44 @@ def run_episode(
     return trajectory
 
 
+def _extract_action_json(response: str) -> Optional[dict]:
+    """Extract action JSON dict from model response for continuation tracking."""
+    try:
+        fence_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if fence_match:
+            return json.loads(fence_match.group(1))
+        start = response.find('{')
+        if start == -1:
+            return None
+        depth = 0
+        for i in range(start, len(response)):
+            if response[i] == '{':
+                depth += 1
+            elif response[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    return json.loads(response[start:i + 1])
+        return None
+    except Exception:
+        return None
+
+
+def _init_role_states(num_envs: int, num_agents: int) -> List[Dict]:
+    """Initialize role states for each env. Default: first ceil(N/3) are cleaners."""
+    n_cleaners = max(1, (num_agents + 2) // 3)
+    role_states = []
+    for _ in range(num_envs):
+        roles = {}
+        for aid in range(1, num_agents + 1):
+            roles[aid] = "cleaner" if aid <= n_cleaners else "eater"
+        role_states.append({
+            'roles': roles,
+            'tool_results': {aid: '' for aid in range(1, num_agents + 1)},
+            'last_actions': {aid: None for aid in range(1, num_agents + 1)},
+        })
+    return role_states
+
+
 def run_parallel_episodes(
     trainer,
     num_envs: int,
@@ -199,16 +240,40 @@ def run_parallel_episodes(
     else:
         model = trainer.ref_model if use_ref_model else trainer.model
 
+    # ── Role switching setup ──
+    role_interval = getattr(config, 'role_assignment_interval', 0)
+    use_roles = (role_interval > 0 and config.action_mode == "compound")
+
+    if use_roles:
+        role_states = _init_role_states(num_envs, config.num_agents)
+        trainer._role_states = role_states
+        # Initial role assignment at step 0
+        if hasattr(trainer, '_perform_role_assignment'):
+            trainer._perform_role_assignment(envs, role_states)
+    else:
+        role_states = None
+        trainer._role_states = None
+
     # Initialize trajectories
     trajectories = []
-    for _ in range(num_envs):
-        trajectories.append({
+    for env_i in range(num_envs):
+        traj_init = {
             "prompts": [], "actions": [], "responses": [],
             "action_prompts": [], "action_texts": [],
             "rewards": [], "log_probs": [], "agent_ids": [],
             "observations": [], "action_input_ids": [], "action_ids": [],
             "global_states": [],
-        })
+            "roles": [],           # per-step per-agent role (flat, parallel to actions)
+            "role_switches": [],   # list of {"step": N, "roles": {aid: role, ...}}
+        }
+        # Record initial role snapshot (step 0, after first assignment)
+        if use_roles and role_states is not None:
+            traj_init["role_switches"].append({
+                "step": 0,
+                "roles": dict(role_states[env_i]['roles']),
+                "changed": True,  # initial assignment is always a "change"
+            })
+        trajectories.append(traj_init)
 
     active_mask = [True] * num_envs
     total_rewards = [0.0] * num_envs
@@ -228,6 +293,7 @@ def run_parallel_episodes(
         active_env_data = [(i, envs[i], obs_list[i]) for i in active_indices]
 
         # Generate actions for all agents across all active envs
+        # (generation.py reads trainer._role_states for role-aware obs/prompts)
         all_results = generate_actions_multi_env_batch(
             trainer, active_env_data, step, model, macro_infer_batch
         )
@@ -260,11 +326,25 @@ def run_parallel_episodes(
                 traj["action_input_ids"].append(action_input_ids)
                 traj["action_ids"].append(action_ids)
 
+                # Store current role for this agent at this step
+                if use_roles and role_states is not None:
+                    traj["roles"].append(role_states[i]['roles'].get(agent_id, ''))
+                else:
+                    traj["roles"].append('')
+
+                # Track last action for continuation hints (role switching)
+                if use_roles and role_states is not None:
+                    parsed = _extract_action_json(full_response)
+                    role_states[i]['last_actions'][agent_id] = parsed
+
                 # Log sample from first env only
                 if log_samples and step == 0 and agent_id == 1 and i == active_indices[0]:
                     obs_text = obs_to_text(obs_list[i][agent_id], envs[i], agent_id, config)
                     if config.action_mode == "compound":
-                        logger.info(f"\n  Sample generation (compound, parallel {num_envs} envs):")
+                        role_info = ""
+                        if use_roles and role_states:
+                            role_info = f" role={role_states[i]['roles'].get(agent_id, '?')}"
+                        logger.info(f"\n  Sample generation (compound{role_info}, parallel {num_envs} envs):")
                         logger.info(f"    Obs: {obs_text}")
                         logger.info(f"    Response: '{full_response[:200]}'")
                         logger.info(f"    → Low-level action: {action}")
@@ -289,6 +369,27 @@ def run_parallel_episodes(
             if done:
                 active_mask[i] = False
 
+        # ── Role reassignment after env.step ──
+        if use_roles and role_interval > 0 and (step + 1) % role_interval == 0:
+            active_role_indices = [i for i in range(num_envs) if active_mask[i]]
+            active_envs_for_roles = [envs[i] for i in active_role_indices]
+            if active_envs_for_roles and hasattr(trainer, '_perform_role_assignment'):
+                # Snapshot old roles to detect changes
+                old_role_snapshots = {
+                    i: dict(role_states[i]['roles']) for i in active_role_indices
+                }
+                active_rs = [role_states[i] for i in active_role_indices]
+                trainer._perform_role_assignment(active_envs_for_roles, active_rs)
+                # Record role reassignment events (both changes and reaffirmations)
+                for i in active_role_indices:
+                    new_roles = role_states[i]['roles']
+                    changed = (new_roles != old_role_snapshots[i])
+                    trajectories[i]["role_switches"].append({
+                        "step": step + 1,
+                        "roles": dict(new_roles),
+                        "changed": changed,
+                    })
+
     # Finalize trajectories
     elapsed = time.time() - start_time
     for i in range(num_envs):
@@ -298,6 +399,9 @@ def run_parallel_episodes(
         )
         trajectories[i]["steps"] = steps_taken[i]
         trajectories[i]["rollout_time"] = elapsed / num_envs  # amortized
+
+    # Clean up role state from trainer
+    trainer._role_states = None
 
     if log_samples:
         from .model_setup import log_cuda_memory
@@ -358,8 +462,35 @@ def log_episode_to_file(config, trajectory: Dict, group_num: int, episode_idx: i
         num_steps = trajectory['steps']
 
         global_states = trajectory.get('global_states', [])
+        roles_list = trajectory.get('roles', [])
+        role_switches = trajectory.get('role_switches', [])
+
+        # Build a lookup: step -> role_switch event (for display at that step boundary)
+        role_switch_at_step = {rs['step']: rs for rs in role_switches}
+
+        # Show initial role assignment (step 0) at the top
+        if 0 in role_switch_at_step:
+            rs = role_switch_at_step[0]
+            roles_str = ", ".join(
+                f"Agent {aid}: {role}" for aid, role in sorted(rs['roles'].items())
+            )
+            f.write(f"[ROLE ASSIGNMENT step 0] {roles_str}\n\n")
 
         for step in range(num_steps):
+            # Show role reassignment event BEFORE this step's actions (if any)
+            # step in role_switch_at_step means reassignment happened after
+            # env.step at the end of the previous step (i.e., between step-1 and step)
+            if step > 0 and step in role_switch_at_step:
+                rs = role_switch_at_step[step]
+                roles_str = ", ".join(
+                    f"Agent {aid}: {role}" for aid, role in sorted(rs['roles'].items())
+                )
+                changed = rs.get('changed', True)
+                if changed:
+                    f.write(f"  >>> [ROLE SWITCH at step {step}] {roles_str}\n\n")
+                else:
+                    f.write(f"  >>> [ROLE REASSIGNED at step {step} — no change] {roles_str}\n\n")
+
             f.write(f"--- Step {step + 1} ---\n")
 
             if step < len(global_states):
@@ -379,8 +510,10 @@ def log_episode_to_file(config, trajectory: Dict, group_num: int, episode_idx: i
                 reward = trajectory['rewards'][idx]
                 response = trajectory['responses'][idx] if idx < len(trajectory['responses']) else "N/A"
                 action_text = trajectory['action_texts'][idx] if idx < len(trajectory['action_texts']) else "N/A"
+                role = roles_list[idx] if idx < len(roles_list) else ""
 
-                f.write(f"\n  [Agent {agent_id}]\n")
+                role_tag = f" ({role.upper()})" if role else ""
+                f.write(f"\n  [Agent {agent_id}{role_tag}]\n")
                 f.write(f"    Observation: {obs}\n")
 
                 thinking_part = response[:300] + "..." if len(response) > 300 else response
@@ -398,7 +531,11 @@ def log_episode_to_file(config, trajectory: Dict, group_num: int, episode_idx: i
 
         f.write(f"\n[Episode Summary]\n")
         f.write(f"  Total Reward: {trajectory['total_reward']:.2f}\n")
-        f.write(f"  Rollout Time: {trajectory.get('rollout_time', 0):.2f}s\n\n")
+        f.write(f"  Rollout Time: {trajectory.get('rollout_time', 0):.2f}s\n")
+        if role_switches:
+            n_changed = sum(1 for rs in role_switches if rs.get('changed', True))
+            f.write(f"  Role Reassignments: {len(role_switches)} events ({n_changed} with changes)\n")
+        f.write("\n")
 
 
 def _gather_trajectories(local_trajectories: List[Dict], accelerator) -> List[Dict]:

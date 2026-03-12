@@ -50,13 +50,23 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env_move import CleanupEnvMove, Config as EnvConfig
 from generated.helpers import (
     observation_to_text,
+    get_role_specific_observation,
+    get_global_role_context,
+    check_action_continuation,
+    find_nearest_apples,
+    find_nearest_dirts,
     parse_action_json,
     dispatch_action,
     ACTION_REGISTRY,
+    TOOL_ACTIONS,
+    move_toward,
 )
 from generated.prompt_template import (
     create_thinking_prompt,
     create_single_stage_prompt,
+    create_role_thinking_prompt,
+    create_role_action_prompt,
+    create_role_assignment_prompt,
 )
 # ==================
 
@@ -414,6 +424,11 @@ class CleanupGRPOTrainer:
             max_dirts=None,
             init_dirt_prob=0.35,
         )
+
+        # Role state (reset per episode in run_episode)
+        self._agent_roles: Dict[int, str] = {}
+        self._agent_tool_results: Dict[int, str] = {}
+        self._agent_last_action: Dict[int, Optional[dict]] = {}
         # ==================
 
         # ------------------------------------------------------------------
@@ -449,10 +464,24 @@ class CleanupGRPOTrainer:
 
     def format_observation(self, raw_obs, agent_id: int, env) -> str:
         """
-        Convert raw env observation (local 5x3 grid string) into natural-language.
-        Uses observation_to_text from helpers.py for rich context.
+        Convert raw env observation into role-specific natural-language.
+        Appends tool results and action continuation hints if applicable.
         """
-        return observation_to_text(env, agent_id)
+        role = self._agent_roles.get(agent_id, "eater")
+        obs_text = get_role_specific_observation(env, agent_id, role)
+
+        # Append tool results from previous step
+        tool_result = self._agent_tool_results.get(agent_id, "")
+        if tool_result:
+            obs_text += f" [TOOL RESULTS] {tool_result}"
+
+        # Append continuation hint
+        last_action = self._agent_last_action.get(agent_id)
+        continuation = check_action_continuation(env, agent_id, last_action)
+        if continuation:
+            obs_text += f" [CONTINUE] {continuation}"
+
+        return obs_text
 
     # ======================================================================
     # === CUSTOMIZE ===
@@ -461,10 +490,11 @@ class CleanupGRPOTrainer:
 
     def create_thinking_prompt(self, obs_text: str, agent_id: int) -> str:
         """
-        Build Stage-1 prompt (thinking/reasoning).
+        Build Stage-1 prompt (thinking/reasoning) using role-specific prompts.
         Returns a chat-template formatted string.
         """
-        messages = create_thinking_prompt(obs_text, agent_id)
+        role = self._agent_roles.get(agent_id, "eater")
+        messages = create_role_thinking_prompt(obs_text, agent_id, role)
         return self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -474,16 +504,15 @@ class CleanupGRPOTrainer:
         Build Stage-2 prompt (action selection).
         Returns a chat-template formatted string.
         """
-        # We use agent_id=1 as placeholder; actual agent_id is embedded in obs_text
-        # The prompt builder will use the correct agent_id from context
-        messages = create_single_stage_prompt(obs_text, thinking_text, agent_id=1)
+        messages = create_role_action_prompt(obs_text, thinking_text, agent_id=1, role="eater")
         return self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
 
     def create_action_prompt_for_agent(self, obs_text: str, thinking_text: str, agent_id: int) -> str:
-        """Build Stage-2 prompt with correct agent_id."""
-        messages = create_single_stage_prompt(obs_text, thinking_text, agent_id)
+        """Build Stage-2 prompt with correct agent_id and role."""
+        role = self._agent_roles.get(agent_id, "eater")
+        messages = create_role_action_prompt(obs_text, thinking_text, agent_id, role)
         return self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -569,6 +598,75 @@ class CleanupGRPOTrainer:
         is_main = self.accelerator is None or self.accelerator.is_main_process
         if is_main:
             logger.info(f"Generated {num_states} fixed evaluation states.")
+
+    # ======================================================================
+    # === CUSTOMIZE ===
+    # ROLE ASSIGNMENT
+    # ======================================================================
+
+    def _perform_role_assignment(self, env):
+        """
+        Meta-LLM call to assign roles (eater/cleaner) based on global state.
+        No env step consumed. No gradient computation.
+        Falls back to current roles on parse failure.
+        """
+        try:
+            global_ctx = get_global_role_context(env)
+            messages = create_role_assignment_prompt(
+                global_ctx, self._agent_roles, self.config.num_agents
+            )
+            prompt_text = self.tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+
+            gen_model = self._get_gen_model(self.model)
+            target_device = self.device
+
+            inputs = self.tokenizer(
+                prompt_text, return_tensors="pt",
+                truncation=True, max_length=512, padding=False,
+            ).to(target_device)
+
+            with torch.no_grad():
+                outputs = gen_model.generate(
+                    **inputs,
+                    max_new_tokens=100,
+                    temperature=0.3,
+                    top_p=0.9,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                )
+
+            response_ids = outputs[0][inputs.input_ids.shape[1]:]
+            response_text = self.tokenizer.decode(response_ids, skip_special_tokens=True)
+
+            # Parse JSON from response
+            import re
+            json_match = re.search(r'\{[^}]+\}', response_text)
+            if json_match:
+                role_dict = json.loads(json_match.group())
+                old_roles = dict(self._agent_roles)
+                for aid_str, role in role_dict.items():
+                    aid = int(aid_str)
+                    if aid in self._agent_roles and role in ("eater", "cleaner"):
+                        self._agent_roles[aid] = role
+
+                # Log role changes
+                changes = [
+                    f"Agent {aid}: {old_roles[aid]}->{self._agent_roles[aid]}"
+                    for aid in sorted(self._agent_roles.keys())
+                    if old_roles.get(aid) != self._agent_roles[aid]
+                ]
+                if changes:
+                    logger.info(f"  [Role Assignment] {', '.join(changes)}")
+                else:
+                    logger.debug("  [Role Assignment] No changes.")
+            else:
+                logger.debug(f"  [Role Assignment] Parse failed: {response_text[:100]}")
+
+        except Exception as e:
+            logger.warning(f"  [Role Assignment] Error: {e}, keeping current roles.")
 
     # ======================================================================
     # === GENERIC — DO NOT MODIFY ===
@@ -660,8 +758,13 @@ class CleanupGRPOTrainer:
         step: int,
         env,
         model,
-    ) -> Tuple[str, torch.Tensor, str, str, str, Optional[torch.Tensor], Optional[torch.Tensor]]:
-        """Generate one action for one agent using two-stage generation (sequential)."""
+    ) -> Tuple[str, torch.Tensor, str, str, str, Optional[torch.Tensor], Optional[torch.Tensor], str, str]:
+        """Generate one action for one agent using two-stage generation (sequential).
+
+        Returns:
+            (action, log_prob, thinking_text, full_response, action_text,
+             action_input_ids, action_ids, obs_text, action_prompt_str)
+        """
         target_device = self.device
         gen_model = self._get_gen_model(model)
 
@@ -689,7 +792,7 @@ class CleanupGRPOTrainer:
         except RuntimeError as e:
             logger.warning(f"Stage-1 generation failed: {e}")
             return (self.action_words[0], torch.tensor(0.0, device=target_device),
-                    "", "", "", None, None)
+                    "", "", "", None, None, obs_text, "")
 
         thinking_ids = t_outputs.sequences[0][t_inputs.input_ids.shape[1]:]
         thinking_text = self.tokenizer.decode(thinking_ids, skip_special_tokens=True)
@@ -716,7 +819,7 @@ class CleanupGRPOTrainer:
         except RuntimeError as e:
             logger.warning(f"Stage-2 generation failed: {e}")
             return (self.action_words[0], torch.tensor(0.0, device=target_device),
-                    thinking_text, thinking_text, "", None, None)
+                    thinking_text, thinking_text, "", None, None, obs_text, action_prompt)
 
         action_ids = a_outputs.sequences[0][a_inputs.input_ids.shape[1]:]
         action_text = self.tokenizer.decode(action_ids, skip_special_tokens=True)
@@ -747,7 +850,7 @@ class CleanupGRPOTrainer:
 
         return (action, log_prob, thinking_text,
                 f"{thinking_text} -> {action_text}", action_text,
-                a_inputs.input_ids, action_ids)
+                a_inputs.input_ids, action_ids, obs_text, action_prompt)
 
     def generate_actions_batch(
         self,
@@ -851,6 +954,7 @@ class CleanupGRPOTrainer:
                 f"{thinking_texts[i]} -> {action_texts[i]}",
                 action_texts[i], action_prompts[i],
                 action_input_ids_list[i], action_ids_list[i],
+                obs_texts[i],
             )
         return results
 
@@ -858,12 +962,11 @@ class CleanupGRPOTrainer:
         """Fallback: generate actions one agent at a time."""
         results = {}
         for aid in sorted(obs_dict.keys()):
-            action, lp, thinking, full, a_text, a_in_ids, a_ids = self.generate_action(
+            (action, lp, thinking, full, a_text,
+             a_in_ids, a_ids, obs_text, action_prompt) = self.generate_action(
                 obs_dict[aid], aid, step, env, model
             )
-            obs_text = self.format_observation(obs_dict[aid], aid, env)
-            action_prompt = self.create_action_prompt_for_agent(obs_text, thinking, aid)
-            results[aid] = (action, lp, thinking, full, a_text, action_prompt, a_in_ids, a_ids)
+            results[aid] = (action, lp, thinking, full, a_text, action_prompt, a_in_ids, a_ids, obs_text)
         return results
 
     # ======================================================================
@@ -898,6 +1001,17 @@ class CleanupGRPOTrainer:
             obs = env._observation()
         else:
             obs = env.reset()
+
+        # Initialize role state for this episode
+        # Default: agent 1 = cleaner, rest = eaters
+        self._agent_roles = {1: "cleaner"}
+        for i in range(2, self.config.num_agents + 1):
+            self._agent_roles[i] = "eater"
+        self._agent_tool_results = {i: "" for i in range(1, self.config.num_agents + 1)}
+        self._agent_last_action = {i: None for i in range(1, self.config.num_agents + 1)}
+
+        # Initial role assignment
+        self._perform_role_assignment(env)
         # ==================
 
         trajectory = {
@@ -916,14 +1030,13 @@ class CleanupGRPOTrainer:
 
             for agent_id in range(1, self.config.num_agents + 1):
                 (action, log_prob, thinking_text, full_response,
-                 action_text, action_prompt, action_input_ids, action_ids) = batch_results[agent_id]
+                 action_text, action_prompt, action_input_ids, action_ids,
+                 obs_text) = batch_results[agent_id]
 
                 actions_to_env[agent_id] = action
 
                 # Parse full JSON action for env dispatch
                 parsed_actions[agent_id] = self.parse_full_action(action_text, agent_id)
-
-                obs_text = self.format_observation(obs[agent_id], agent_id, env)
 
                 trajectory["prompts"].append(self.create_thinking_prompt(obs_text, agent_id))
                 trajectory["actions"].append(action)
@@ -943,36 +1056,51 @@ class CleanupGRPOTrainer:
                     )
 
             # === CUSTOMIZE ===
-            # Build env actions dict. For actions with args (like move_to),
-            # we pass the action name to env.step() and let env handle movement.
-            # For move_to specifically, we translate to a directional action.
+            # Build env actions dict. Handle tool actions, move_to, and direct actions.
             env_action_dict = {}
             for agent_id in range(1, self.config.num_agents + 1):
                 parsed = parsed_actions[agent_id]
                 action_name = parsed.get("action", "stay")
                 args = parsed.get("args", {})
 
-                # Map high-level actions to env primitive actions
-                if action_name == "move_to":
+                # Store last action for continuation tracking
+                self._agent_last_action[agent_id] = parsed
+
+                # Check if this is a tool action
+                if action_name in TOOL_ACTIONS:
+                    # Tool actions: agent stays in place, execute tool, store result
+                    env_action_dict[agent_id] = "stay"
+                    tool_fn = ACTION_REGISTRY[action_name]
+                    tool_fn(env, agent_id)
+                    self._agent_tool_results[agent_id] = tool_fn.last_result
+                elif action_name == "move_to":
                     # Compute direction to target
-                    from generated.helpers import move_toward, _display_to_internal_y
                     target_x = args.get("coord_x", env.agents[agent_id][0])
                     target_y_disp = args.get("coord_y", 0)
                     direction = move_toward(env, agent_id, target_x, target_y_disp)
                     env_action_dict[agent_id] = direction
+                    self._agent_tool_results[agent_id] = ""
                 elif action_name in ("eat", "clean", "stay",
                                      "move_up", "move_down", "move_left", "move_right"):
-                    # Direct mapping
                     direct_map = {
                         "eat": "eat", "clean": "clean", "stay": "stay",
                         "move_up": "up", "move_down": "down",
                         "move_left": "left", "move_right": "right",
                     }
                     env_action_dict[agent_id] = direct_map.get(action_name, "stay")
+                    self._agent_tool_results[agent_id] = ""
                 else:
                     env_action_dict[agent_id] = "stay"
+                    self._agent_tool_results[agent_id] = ""
 
             obs, rewards, done, info = env.step(env_action_dict)
+
+            # Role reassignment every N steps
+            if (
+                not done
+                and (step + 1) % self.config.role_assignment_interval == 0
+            ):
+                self._perform_role_assignment(env)
             # ==================
 
             if capture_env_states:

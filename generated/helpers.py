@@ -386,6 +386,243 @@ def move_right(env, agent_id: int) -> bool:
 
 
 # ===========================================================================
+# GLOBAL CONTEXT & ROLE-SPECIFIC OBSERVATIONS
+# ===========================================================================
+
+def get_global_role_context(env) -> str:
+    """
+    Build a text summary of global game state for role assignment.
+    Includes dirt/apple counts, all agent positions, scores, step count.
+    """
+    dirt_count = env._count_items("#")
+    apple_count = env._count_items("a")
+
+    lines = []
+    lines.append(f"Step: {env.step_count}/{env.cfg.max_steps}.")
+    lines.append(f"Dirt on river: {dirt_count} (initial: {env.init_dirt_count}).")
+    lines.append(f"Apples on land: {apple_count}.")
+
+    for aid in sorted(env.agents.keys()):
+        ax, ay_int = env.agents[aid]
+        ay_disp = _internal_to_display_y(ay_int, env.height)
+        score = env.scores.get(aid, 0.0)
+        lines.append(f"Agent {aid}: position ({ax},{ay_disp}), score {score:.1f}.")
+
+    return " ".join(lines)
+
+
+def get_role_specific_observation(env, agent_id: int, role: str) -> str:
+    """
+    Like observation_to_text but tailored by role.
+    - eater: emphasizes apples, de-emphasizes dirt details
+    - cleaner: emphasizes dirt/river, de-emphasizes apple details
+    """
+    ax, ay_int = env.agents[agent_id]
+    ay_disp = _internal_to_display_y(ay_int, env.height)
+
+    lines = []
+    lines.append(f"You are Agent {agent_id} (role: {role.upper()}) at position ({ax}, {ay_disp}).")
+
+    # Terrain at agent's position
+    cell_terrain = env.terrain[ay_int][ax]
+    terrain_name = "land" if cell_terrain == "*" else "river"
+    lines.append(f"You are standing on {terrain_name}.")
+
+    # Item at agent's position
+    item_here = env.items[ay_int][ax]
+    if item_here == "a":
+        lines.append("There is an APPLE at your current position (you can eat it).")
+    elif item_here == "#":
+        lines.append("There is DIRT at your current position (you can clean it).")
+
+    # Local 5x3 window
+    half_w, half_h = 2, 1
+    y0 = max(0, ay_int - half_h)
+    y1 = min(env.height - 1, ay_int + half_h)
+    x0 = max(0, ax - half_w)
+    x1 = min(env.width - 1, ax + half_w)
+
+    visible_apples = []
+    visible_dirts = []
+    visible_agents = []
+
+    for yy in range(y0, y1 + 1):
+        for xx in range(x0, x1 + 1):
+            disp_y = _internal_to_display_y(yy, env.height)
+            item = env.items[yy][xx]
+            if item == "a":
+                visible_apples.append((xx, disp_y))
+            elif item == "#":
+                visible_dirts.append((xx, disp_y))
+
+    for other_id, (ox, oy_int) in env.agents.items():
+        if other_id == agent_id:
+            continue
+        oy_disp = _internal_to_display_y(oy_int, env.height)
+        if x0 <= ox <= x1 and y0 <= oy_int <= y1:
+            visible_agents.append((other_id, ox, oy_disp))
+
+    if role == "eater":
+        # Emphasize apples
+        if visible_apples:
+            apple_strs = [f"({x},{y})" for x, y in visible_apples]
+            lines.append(f"[PRIORITY] Visible apples nearby: {', '.join(apple_strs)}.")
+        else:
+            lines.append("No apples visible in your immediate area.")
+
+        if visible_dirts:
+            lines.append(f"({len(visible_dirts)} dirt nearby — not your priority.)")
+
+        # Global nearest apples (key info for eaters)
+        nearest_apples = env._find_nearest_items(agent_id, "a", n=5)
+        if nearest_apples:
+            na_strs = []
+            for x, y in nearest_apples:
+                disp_y = _internal_to_display_y(y, env.height)
+                dist = ((ax - x)**2 + (ay_int - y)**2)**0.5
+                na_strs.append(f"({x},{disp_y}) dist={dist:.1f}")
+            lines.append(f"[PRIORITY] Nearest apples on map: {', '.join(na_strs)}.")
+        else:
+            lines.append("No apples on the map currently. Cleaners need to clear more dirt!")
+
+        # Brief dirt summary
+        dirt_count = env._count_items("#")
+        lines.append(f"Map dirt: {dirt_count} (initial: {env.init_dirt_count}).")
+
+    else:  # cleaner
+        # Emphasize dirts
+        if visible_dirts:
+            dirt_strs = [f"({x},{y})" for x, y in visible_dirts]
+            lines.append(f"[PRIORITY] Visible dirt nearby: {', '.join(dirt_strs)}.")
+        else:
+            lines.append("No dirt visible in your immediate area.")
+
+        if visible_apples:
+            lines.append(f"({len(visible_apples)} apples nearby — not your priority.)")
+
+        # Global nearest dirts (key info for cleaners)
+        nearest_dirts = env._find_nearest_items(agent_id, "#", n=5)
+        if nearest_dirts:
+            nd_strs = []
+            for x, y in nearest_dirts:
+                disp_y = _internal_to_display_y(y, env.height)
+                dist = ((ax - x)**2 + (ay_int - y)**2)**0.5
+                nd_strs.append(f"({x},{disp_y}) dist={dist:.1f}")
+            lines.append(f"[PRIORITY] Nearest dirt on map: {', '.join(nd_strs)}.")
+        else:
+            lines.append("No dirt on the map! Great job — river is clean.")
+
+        # Brief apple summary
+        apple_count = env._count_items("a")
+        dirt_count = env._count_items("#")
+        lines.append(
+            f"Map status: {dirt_count} dirt remaining, {apple_count} apples on land. "
+            f"Apples spawn faster when dirt drops below {env.init_dirt_count}."
+        )
+
+    # Nearby agents (both roles need this)
+    if visible_agents:
+        agent_strs = [f"Agent {aid} at ({ox},{oy})" for aid, ox, oy in visible_agents]
+        lines.append(f"Nearby agents: {', '.join(agent_strs)}.")
+
+    # All agent positions
+    other_agents_info = []
+    for other_id, (ox, oy_int) in env.agents.items():
+        if other_id == agent_id:
+            continue
+        oy_disp = _internal_to_display_y(oy_int, env.height)
+        other_agents_info.append(f"Agent {other_id} at ({ox},{oy_disp})")
+    if other_agents_info:
+        lines.append(f"All agents: {', '.join(other_agents_info)}.")
+
+    # Scores
+    score_strs = [f"Agent {aid}: {score:.1f}" for aid, score in env.scores.items()]
+    lines.append(f"Scores: {', '.join(score_strs)}.")
+
+    # Episode progress
+    lines.append(f"Step: {env.step_count}/{env.cfg.max_steps}.")
+
+    return " ".join(lines)
+
+
+def find_nearest_apples(env, agent_id: int) -> bool:
+    """
+    Tool action: find the 5 nearest apples and format them as a result string.
+    The agent stays in place (no env step). Returns True always.
+    The formatted result is stored on the function's last_result attribute.
+    """
+    ax, ay_int = env.agents[agent_id]
+    nearest = env._find_nearest_items(agent_id, "a", n=5)
+
+    if not nearest:
+        find_nearest_apples.last_result = "No apples found on the map."
+    else:
+        parts = []
+        for x, y in nearest:
+            disp_y = _internal_to_display_y(y, env.height)
+            dist = ((ax - x)**2 + (ay_int - y)**2)**0.5
+            parts.append(f"Apple at ({x},{disp_y}), distance={dist:.1f}")
+        find_nearest_apples.last_result = "Nearest apples: " + "; ".join(parts)
+
+    return True
+
+find_nearest_apples.last_result = ""
+
+
+def find_nearest_dirts(env, agent_id: int) -> bool:
+    """
+    Tool action: find the 5 nearest dirts and format them as a result string.
+    The agent stays in place (no env step). Returns True always.
+    The formatted result is stored on the function's last_result attribute.
+    """
+    ax, ay_int = env.agents[agent_id]
+    nearest = env._find_nearest_items(agent_id, "#", n=5)
+
+    if not nearest:
+        find_nearest_dirts.last_result = "No dirt found on the map."
+    else:
+        parts = []
+        for x, y in nearest:
+            disp_y = _internal_to_display_y(y, env.height)
+            dist = ((ax - x)**2 + (ay_int - y)**2)**0.5
+            parts.append(f"Dirt at ({x},{disp_y}), distance={dist:.1f}")
+        find_nearest_dirts.last_result = "Nearest dirts: " + "; ".join(parts)
+
+    return True
+
+find_nearest_dirts.last_result = ""
+
+
+def check_action_continuation(env, agent_id: int, last_action: Optional[dict]) -> str:
+    """
+    Check if a multi-step action (move_to) hasn't finished yet.
+    Returns a hint string if the agent should continue, or "" if done.
+    """
+    if last_action is None:
+        return ""
+    action_name = last_action.get("action", "")
+    if action_name != "move_to":
+        return ""
+    args = last_action.get("args", {})
+    target_x = args.get("coord_x")
+    target_y_disp = args.get("coord_y")
+    if target_x is None or target_y_disp is None:
+        return ""
+
+    ax, ay_int = env.agents[agent_id]
+    ay_disp = _internal_to_display_y(ay_int, env.height)
+
+    if ax == target_x and ay_disp == target_y_disp:
+        return ""  # arrived
+
+    return (
+        f"You chose move_to({target_x},{target_y_disp}) last step and haven't "
+        f"arrived yet (currently at ({ax},{ay_disp})). Continue with "
+        f"move_to({target_x},{target_y_disp})."
+    )
+
+
+# ===========================================================================
 # DISPATCH TABLE
 # ===========================================================================
 
@@ -399,7 +636,12 @@ ACTION_REGISTRY: Dict[str, Any] = {
     "move_down":  move_down,
     "move_left":  move_left,
     "move_right": move_right,
+    "find_nearest_apples": find_nearest_apples,
+    "find_nearest_dirts":  find_nearest_dirts,
 }
+
+# Tool actions: these map to "stay" in env and produce results for next step
+TOOL_ACTIONS = {"find_nearest_apples", "find_nearest_dirts"}
 
 
 def dispatch_action(env, action_json: dict) -> bool:

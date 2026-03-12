@@ -108,6 +108,8 @@ class GRPOConfig:
     max_env_steps: int = 30
     # Seed for reproducibility (environment resets, model init, etc.)
     seed: int = 42
+    # Reassign agent roles (eater/cleaner) every N environment steps
+    role_assignment_interval: int = 10
 
     # -------------------------------------------------------------------------
     # CHECKPOINTING & LOGGING

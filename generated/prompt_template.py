@@ -200,6 +200,248 @@ def create_single_stage_prompt(
 
 
 # ===========================================================================
+# ROLE-SPECIFIC CONTEXTS
+# ===========================================================================
+
+EATER_CONTEXT = """
+GAME: Cooperative Cleanup — you are assigned the EATER role.
+
+MAP LAYOUT:
+- Grid is 15 columns (x: 0-14) wide and 9 rows (y: 0-8 in display coords) tall.
+- Display coordinates: x=0 left, y=0 BOTTOM.
+- River: columns 6-8 (center). Land: columns 0-5 and 9-14.
+
+YOUR ROLE — EATER:
+Your job is to find and eat apples on land for +1.0 reward each.
+- Navigate to the nearest apple and use 'eat' when on it.
+- Apples spawn on land when the river is clean (fewer dirt = more apples).
+- Avoid the river — that's the cleaner's job.
+- Avoid colliding with other agents (collision = both stay).
+
+COORDINATE SYSTEM:
+- All coordinates use DISPLAY coordinates: x=left→right, y=BOTTOM→top.
+""".strip()
+
+CLEANER_CONTEXT = """
+GAME: Cooperative Cleanup — you are assigned the CLEANER role.
+
+MAP LAYOUT:
+- Grid is 15 columns (x: 0-14) wide and 9 rows (y: 0-8 in display coords) tall.
+- Display coordinates: x=0 left, y=0 BOTTOM.
+- River: columns 6-8 (center). Land: columns 0-5 and 9-14.
+
+YOUR ROLE — CLEANER:
+Your job is to navigate to dirt on the river and clean it.
+- Cleaning gives no immediate reward, but enables apple spawning for the team.
+- The fewer dirts remaining, the faster apples spawn on land.
+- Focus on the river (columns 6-8) where dirt appears.
+- Avoid colliding with other agents (collision = both stay).
+
+COORDINATE SYSTEM:
+- All coordinates use DISPLAY coordinates: x=left→right, y=BOTTOM→top.
+""".strip()
+
+EATER_ACTIONS = """
+AVAILABLE ACTIONS (respond with exactly ONE JSON object):
+
+1. move_to — Move one step toward a target cell.
+   {"action": "move_to", "agent_id": <id>, "args": {"coord_x": <x>, "coord_y": <y>}}
+   Note: Takes ONE step toward target. Call again next turn if not there yet.
+
+2. eat — Eat an apple at your current position.
+   {"action": "eat", "agent_id": <id>, "args": {}}
+   Use when: you are standing on an apple cell.
+
+3. stay — Wait in place for one step.
+   {"action": "stay", "agent_id": <id>, "args": {}}
+
+4. move_up / move_down / move_left / move_right — Move one step in a direction.
+   {"action": "move_up", "agent_id": <id>, "args": {}}
+
+5. find_nearest_apples — Use this tool to scan the map for the 5 nearest apples.
+   {"action": "find_nearest_apples", "agent_id": <id>, "args": {}}
+   Note: Costs one step (you stay in place), but you'll see the results in your next observation.
+   Use when you don't know where apples are.
+""".strip()
+
+CLEANER_ACTIONS = """
+AVAILABLE ACTIONS (respond with exactly ONE JSON object):
+
+1. move_to — Move one step toward a target cell.
+   {"action": "move_to", "agent_id": <id>, "args": {"coord_x": <x>, "coord_y": <y>}}
+   Note: Takes ONE step toward target. Call again next turn if not there yet.
+
+2. clean — Clean dirt at your current position.
+   {"action": "clean", "agent_id": <id>, "args": {}}
+   Use when: you are standing on a dirt cell (river).
+
+3. stay — Wait in place for one step.
+   {"action": "stay", "agent_id": <id>, "args": {}}
+
+4. move_up / move_down / move_left / move_right — Move one step in a direction.
+   {"action": "move_up", "agent_id": <id>, "args": {}}
+
+5. find_nearest_dirts — Use this tool to scan the map for the 5 nearest dirts.
+   {"action": "find_nearest_dirts", "agent_id": <id>, "args": {}}
+   Note: Costs one step (you stay in place), but you'll see the results in your next observation.
+   Use when you don't know where dirt is.
+""".strip()
+
+EATER_RESPONSE_FORMAT = """
+RESPONSE FORMAT:
+Output EXACTLY ONE JSON object. No explanation, no extra text. Examples:
+  {"action": "move_to", "agent_id": 1, "args": {"coord_x": 3, "coord_y": 5}}
+  {"action": "eat", "agent_id": 1, "args": {}}
+  {"action": "find_nearest_apples", "agent_id": 1, "args": {}}
+  {"action": "move_right", "agent_id": 1, "args": {}}
+""".strip()
+
+CLEANER_RESPONSE_FORMAT = """
+RESPONSE FORMAT:
+Output EXACTLY ONE JSON object. No explanation, no extra text. Examples:
+  {"action": "move_to", "agent_id": 2, "args": {"coord_x": 7, "coord_y": 4}}
+  {"action": "clean", "agent_id": 2, "args": {}}
+  {"action": "find_nearest_dirts", "agent_id": 2, "args": {}}
+  {"action": "move_left", "agent_id": 2, "args": {}}
+""".strip()
+
+ROLE_ASSIGNMENT_SYSTEM = """
+You are a coordinator for a cooperative multi-agent game.
+Agents clean a river (removing dirt) and eat apples on land.
+Cleaning dirt enables apple spawning. Eating apples gives +1.0 reward.
+Assign each agent a role: "eater" or "cleaner".
+- More dirt remaining → need more cleaners.
+- Few dirt / many apples → need more eaters.
+- At least one agent should always be a cleaner if dirt exists.
+Output ONLY a JSON object mapping agent_id to role.
+""".strip()
+
+
+# ===========================================================================
+# ROLE-SPECIFIC PROMPT BUILDERS
+# ===========================================================================
+
+def create_role_assignment_prompt(
+    global_context: str,
+    current_roles: dict,
+    num_agents: int,
+) -> List[Dict[str, str]]:
+    """
+    Build a prompt for the role-assignment meta-call.
+    Returns List[Dict] for chat template.
+    """
+    roles_str = ", ".join(f'Agent {aid}: {role}' for aid, role in sorted(current_roles.items()))
+    user_content = (
+        f"CURRENT GAME STATE:\n{global_context}\n\n"
+        f"CURRENT ROLES: {roles_str}\n\n"
+        f"Assign roles for {num_agents} agents. Output a JSON object like:\n"
+        '{"1": "eater", "2": "cleaner", "3": "eater"}\n'
+        "Only output the JSON, nothing else."
+    )
+    return [
+        {"role": "system", "content": ROLE_ASSIGNMENT_SYSTEM},
+        {"role": "user", "content": user_content},
+    ]
+
+
+def create_role_thinking_prompt(
+    obs_text: str,
+    agent_id: int,
+    role: str,
+) -> List[Dict[str, str]]:
+    """
+    Build Stage-1 (thinking) prompt tailored to the agent's role.
+    """
+    if role == "eater":
+        context = EATER_CONTEXT
+        actions = EATER_ACTIONS
+        strategy = (
+            "STRATEGY TIPS:\n"
+            "- If you are on an APPLE: use 'eat' immediately for +1.0 reward.\n"
+            "- Navigate to the nearest apple using 'move_to'.\n"
+            "- If no apples are visible, use 'find_nearest_apples' to scan the map.\n"
+            "- Avoid colliding with other agents.\n"
+            "- Stay on land (columns 0-5 and 9-14)."
+        )
+    else:
+        context = CLEANER_CONTEXT
+        actions = CLEANER_ACTIONS
+        strategy = (
+            "STRATEGY TIPS:\n"
+            "- If you are on DIRT: use 'clean' immediately.\n"
+            "- Navigate to the nearest dirt using 'move_to'.\n"
+            "- If no dirt is visible, use 'find_nearest_dirts' to scan the map.\n"
+            "- Focus on the river (columns 6-8).\n"
+            "- Avoid colliding with other agents."
+        )
+
+    system_content = (
+        f"You are Agent {agent_id} in a cooperative grid-world game.\n\n"
+        f"{context}\n\n"
+        f"{actions}\n\n"
+        f"{strategy}\n\n"
+        "Think carefully about the current situation and decide on the best action."
+    )
+
+    user_content = (
+        f"CURRENT SITUATION (Agent {agent_id}, role: {role.upper()}):\n{obs_text}\n\n"
+        "Think step by step about what you should do next. "
+        "Consider your position, nearby items, and what will maximize the team's score."
+    )
+
+    return [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": user_content},
+    ]
+
+
+def create_role_action_prompt(
+    obs_text: str,
+    thinking_response: str,
+    agent_id: int,
+    role: str,
+) -> List[Dict[str, str]]:
+    """
+    Build Stage-2 (action selection) prompt tailored to the agent's role.
+    """
+    if role == "eater":
+        context = EATER_CONTEXT
+        actions = EATER_ACTIONS
+        resp_fmt = EATER_RESPONSE_FORMAT
+    else:
+        context = CLEANER_CONTEXT
+        actions = CLEANER_ACTIONS
+        resp_fmt = CLEANER_RESPONSE_FORMAT
+
+    system_content = (
+        f"You are Agent {agent_id} (role: {role.upper()}) in a cooperative grid-world game.\n\n"
+        f"{context}\n\n"
+        f"{actions}\n\n"
+        f"{resp_fmt}"
+    )
+
+    user_content = (
+        f"CURRENT SITUATION (Agent {agent_id}, role: {role.upper()}):\n{obs_text}\n\n"
+        "Think step by step about what you should do next."
+    )
+
+    action_instruction = (
+        "Based on your reasoning, output EXACTLY ONE JSON action object. "
+        "No explanation — just the JSON.\n"
+        f"Remember: you are Agent {agent_id} (role: {role.upper()}). "
+        "Use the correct agent_id in your JSON.\n"
+        f"{resp_fmt}"
+    )
+
+    return [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": user_content},
+        {"role": "assistant", "content": thinking_response},
+        {"role": "user", "content": action_instruction},
+    ]
+
+
+# ===========================================================================
 # LEGACY / CONVENIENCE ALIASES
 # ===========================================================================
 

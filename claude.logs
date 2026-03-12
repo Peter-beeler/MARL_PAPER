@@ -1,0 +1,118 @@
+================================================================================
+Claude Code Agent Log — Dynamic Role Switching with Tools & Action Continuation
+Date: 2026-03-09
+================================================================================
+
+## Plan Summary
+Implemented 3 interrelated features across two systems:
+1. Dynamic Role Assignment — meta LLM call every N steps assigns roles (eater/cleaner)
+2. Role-Specific Prompts + Tool Actions — differentiated prompts per role, tool actions
+3. Action Continuation — reminders to continue multi-step move_to/clean_at/eat_at actions
+
+## Phase 1: generated/ System (Reference Implementation)
+
+### 1. grpo_config.py
+- Added: `role_assignment_interval: int = 5` (reassign roles every 5 env steps)
+
+### 2. generated/helpers.py
+- Added `get_global_role_context(env)` — global state summary for role assignment
+- Added `get_role_specific_observation(env, agent_id, role)` — role-tailored observations
+- Added `find_nearest_apples(env, agent_id)` — tool action, finds 5 nearest apples
+- Added `find_nearest_dirts(env, agent_id)` — tool action, finds 5 nearest dirts
+- Added `check_action_continuation(env, agent_id, last_action)` — continuation hints
+- Updated `ACTION_REGISTRY` with tool actions; added `TOOL_ACTIONS` set
+
+### 3. generated/prompt_template.py
+- Added EATER_CONTEXT, CLEANER_CONTEXT, role-specific actions & response formats
+- Added ROLE_ASSIGNMENT_SYSTEM prompt
+- Added `create_role_assignment_prompt()`, `create_role_thinking_prompt()`, `create_role_action_prompt()`
+
+### 4. generated/train.py
+- Role state vars: `_agent_roles`, `_agent_tool_results`, `_agent_last_action`
+- Modified format_observation, create_thinking_prompt, create_action_prompt for roles
+- Added `_perform_role_assignment(env)`: meta LLM call (no gradient)
+- Fixed redundant `format_observation` call (Issue 2)
+
+## Phase 2: utils/ System (Actual Training System — grpo_textgame.py)
+
+### 5. utils/config.py
+- Added: `role_assignment_interval: int = 10` (reassign roles every 10 env steps)
+
+### 6. utils/args.py
+- Added: `--role_assignment_interval` CLI argument (default=10, 0=disabled)
+
+### 7. utils/observation.py
+- Added `TOOL_ACTIONS` set: `{"find_nearest_apples", "find_nearest_dirts"}`
+- Added `_tool_results` module-level dict for tool result storage
+- Added `find_nearest_apples(env, agent_id, **kwargs)` → returns `("stay", True)`, stores result
+- Added `find_nearest_dirts(env, agent_id, **kwargs)` → returns `("stay", True)`, stores result
+- Added `pop_tool_result(env, agent_id)` → get and clear tool result
+- Added `get_global_role_context(env)` → text summary for role assignment meta-call
+- Added `get_role_specific_observation(env, agent_id, role)` → role-tailored compound obs
+  - Eater: emphasizes apples, shows nearest apples, de-emphasizes dirt
+  - Cleaner: emphasizes dirt, shows nearest dirts, de-emphasizes apples
+- Added `check_action_continuation(env, agent_id, last_action)` → hint for unfinished multi-step actions
+
+### 8. utils/prompts.py
+- Added `EATER_COMPOUND_CONTEXT` — eater-specific system prompt with eater actions
+- Added `CLEANER_COMPOUND_CONTEXT` — cleaner-specific system prompt with cleaner actions
+- Added `ROLE_ASSIGNMENT_SYSTEM` — coordinator system prompt
+- Added `create_role_compound_prompt(obs_text, config, tokenizer, env, agent_id, role)` — role-specific compound prompt
+- Added `create_role_assignment_prompt(global_context, current_roles, num_agents, tokenizer)` — meta-call prompt
+
+### 9. utils/generation.py
+- Imported new functions: `get_role_specific_observation`, `check_action_continuation`, `pop_tool_result`, `TOOL_ACTIONS`, `create_role_compound_prompt`
+- Modified flat_meta building in `generate_actions_multi_env_batch`:
+  - Added 5th element `role` to flat_meta tuple
+  - When roles active: uses role-specific observation + tool results + continuation hints
+  - When roles inactive: uses standard `obs_to_text` (backward compatible)
+- Modified compound prompt building: uses `create_role_compound_prompt` when role is set
+- After action parsing: collects tool results via `pop_tool_result` into role_states
+
+### 10. utils/rollout.py
+- Added `_extract_action_json(response)` — extracts JSON from model response for continuation tracking
+- Added `_init_role_states(num_envs, num_agents)` — initializes role state dicts per env
+  - Default: first ceil(N/3) agents are cleaners, rest are eaters
+- Modified `run_parallel_episodes`:
+  - Initializes role_states and sets `trainer._role_states` when role switching enabled
+  - Calls `trainer._perform_role_assignment` at step 0 for initial assignment
+  - After generation: extracts parsed action JSON for continuation tracking (last_actions)
+  - After env.step: triggers role reassignment every `role_assignment_interval` steps
+  - Cleans up `trainer._role_states = None` after rollout
+
+### 11. grpo_textgame.py
+- Added `find_nearest_apples`, `find_nearest_dirts` to `self.helper_functions` list
+- Added `self._role_states = None` in `__init__`
+- Added `_perform_role_assignment(envs, role_states)` method:
+  - Builds global context and role assignment prompt per env
+  - Single LLM generate call (temperature=0.3, max_new_tokens=100, no gradient)
+  - Parses JSON output to extract new roles
+  - Falls back to keeping current roles if parsing fails
+  - Logs role changes
+- Added `role_assignment_interval=args.role_assignment_interval` to config construction
+
+### 12. launch_textgame.sh
+- Added `ROLE_ASSIGNMENT_INTERVAL=10` variable
+- Added `--role_assignment_interval $ROLE_ASSIGNMENT_INTERVAL` to CLI args
+- Added role assignment to config print section
+
+## Verification (Phase 2)
+- All 7 modified files compile cleanly (py_compile)
+- utils/observation.py: all new functions tested against live env (env_copy.py)
+  - get_global_role_context: produces correct state summary
+  - get_role_specific_observation: eater/cleaner differentiation verified
+  - find_nearest_apples/dirts: returns ("stay", True), stores correct results
+  - check_action_continuation: correct hints for unfinished move_to/clean_at/eat_at
+- utils/prompts.py: role-specific prompts generate correct system messages and actions
+- utils/generation.py: parse_and_execute_action correctly dispatches tool actions via getattr
+- utils/rollout.py: _init_role_states, _extract_action_json tested
+
+## Architecture Notes (Phase 2)
+- Role switching is activated when `role_assignment_interval > 0` AND `action_mode == "compound"`
+- Role state is stored on trainer._role_states (list of dicts, one per env)
+- Generation reads role state from trainer to build role-aware observations and prompts
+- Tool results are stored in observation._tool_results dict keyed by (id(env), agent_id)
+- Tool results flow: step T generation → _tool_results → pop_tool_result → role_states → step T+1 obs
+- Role assignment is NOT part of the trainable trajectory (no gradients, no log-probs)
+- When role switching is disabled (interval=0 or text mode), all code paths are unchanged
+- Backward compatible: no changes to text mode, existing compound mode without roles unchanged

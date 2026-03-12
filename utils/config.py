@@ -66,6 +66,7 @@ class GRPOConfig:
     # Environment settings
     max_env_steps: int = 50
     eat_reward: float = 1.0
+    role_assignment_interval: int = 10  # reassign agent roles every N env steps
 
     # Checkpoint settings
     output_dir: str = "./grpo_textgame_checkpoints"

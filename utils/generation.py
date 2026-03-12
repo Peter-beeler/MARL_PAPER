@@ -18,10 +18,14 @@ from typing import Dict, List, Optional, Tuple
 
 from .logprob import compute_batch_sequence_log_prob
 # === TODO: observation.py and prompts.py must be implemented before this file works ===
-from .observation import obs_to_text
+from .observation import (
+    obs_to_text, get_role_specific_observation, check_action_continuation,
+    pop_tool_result, TOOL_ACTIONS,
+)
 from .prompts import (
     create_thinking_prompt, create_action_prompt,
     create_single_stage_prompt_text, create_single_stage_prompt_compound,
+    create_role_compound_prompt,
 )
 # Action dispatch uses dynamic lookup — no need to import individual actions
 from . import observation as _obs_module
@@ -684,12 +688,31 @@ def generate_actions_multi_env_batch(
         model.module if (accelerator is not None and hasattr(model, 'module')) else model
     )
 
-    # Build flat list: (env_idx, agent_id, obs_text, env)
+    # Build flat list: (env_idx, agent_id, obs_text, env, role_or_None)
+    # When role switching is active, use role-specific observations with
+    # tool results and continuation hints from the previous step.
+    role_states = getattr(trainer, '_role_states', None)
     flat_meta = []
     for env_idx, env, obs_dict in active_env_data:
         for agent_id in sorted(obs_dict.keys()):
-            ot = obs_to_text(obs_dict[agent_id], env, agent_id, config)
-            flat_meta.append((env_idx, agent_id, ot, env))
+            role = None
+            if role_states is not None and env_idx < len(role_states):
+                rs = role_states[env_idx]
+                role = rs.get('roles', {}).get(agent_id)
+            if role and config.action_mode == "compound":
+                ot = get_role_specific_observation(env, agent_id, role)
+                # Append tool results from previous step
+                tool_res = role_states[env_idx].get('tool_results', {}).get(agent_id, '')
+                if tool_res:
+                    ot += f"\n[TOOL RESULTS] {tool_res}"
+                # Append continuation hints
+                last_act = role_states[env_idx].get('last_actions', {}).get(agent_id)
+                cont_hint = check_action_continuation(env, agent_id, last_act)
+                if cont_hint:
+                    ot += f"\n[CONTINUE] {cont_hint}"
+            else:
+                ot = obs_to_text(obs_dict[agent_id], env, agent_id, config)
+            flat_meta.append((env_idx, agent_id, ot, env, role))
 
     N = len(flat_meta)
     if N == 0:
@@ -800,10 +823,13 @@ def generate_actions_multi_env_batch(
 
     # ── COMPOUND ──
     else:
-        prompts = [
-            create_single_stage_prompt_compound(m[2], config, tokenizer, m[3], m[1])
-            for m in flat_meta
-        ]
+        prompts = []
+        for m in flat_meta:
+            env_idx, agent_id, ot, env_ref, role = m
+            if role:
+                prompts.append(create_role_compound_prompt(ot, config, tokenizer, env_ref, agent_id, role))
+            else:
+                prompts.append(create_single_stage_prompt_compound(ot, config, tokenizer, env_ref, agent_id))
 
         try:
             input_ids, gen_ids, gen_texts = _chunked_generate(
@@ -840,4 +866,13 @@ def generate_actions_multi_env_batch(
                 actions[i], log_probs[i], gen_texts[i], gen_texts[i], gen_texts[i],
                 "", input_ids[i], gen_ids[i]
             )
+
+        # Collect tool results from tool actions executed during parse_and_execute_action
+        if role_states is not None:
+            for i in range(N):
+                env_idx, agent_id = flat_meta[i][0], flat_meta[i][1]
+                tool_res = pop_tool_result(flat_meta[i][3], agent_id)
+                if env_idx < len(role_states):
+                    role_states[env_idx].setdefault('tool_results', {})[agent_id] = tool_res
+
         return results

@@ -102,7 +102,10 @@ class CleanupGameGRPO:
                     logger.info(f"Log probability mode: {config.logprob_mode}")
         else:  # compound
             self.action_words = ['up', 'down', 'left', 'right', 'clean', 'eat', 'stay']
-            self.helper_functions = ['move_to', 'clean_at', 'eat_at', 'random_explore']
+            self.helper_functions = [
+                'move_to', 'clean_at', 'eat_at', 'random_explore',
+                'find_nearest_apples', 'find_nearest_dirts',
+            ]
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info(f"Helper functions: {self.helper_functions}")
                 logger.info(
@@ -149,6 +152,9 @@ class CleanupGameGRPO:
         self.episode_rewards = []
         self.episode_steps = []
         self.training_step = 0
+
+        # ── Role switching state (set per-episode by rollout) ──
+        self._role_states = None
 
         # ── Wandb ──
         if config.use_wandb and (self.accelerator is None or self.accelerator.is_main_process):
@@ -348,7 +354,7 @@ class CleanupGameGRPO:
         # Load optimizer state
         opt_file = os.path.join(state_path, "optimizer.pt")
         if os.path.exists(opt_file):
-            opt_state = torch.load(opt_file, map_location="cpu")
+            opt_state = torch.load(opt_file, map_location="cpu", weights_only=False)
             self.optimizer.load_state_dict(opt_state)
             if is_main:
                 logger.info(f"  Loaded optimizer state from {opt_file}")
@@ -356,7 +362,7 @@ class CleanupGameGRPO:
         # Load scheduler state
         sched_file = os.path.join(state_path, "scheduler.pt")
         if os.path.exists(sched_file):
-            sched_state = torch.load(sched_file, map_location="cpu")
+            sched_state = torch.load(sched_file, map_location="cpu", weights_only=False)
             self.scheduler.load_state_dict(sched_state)
             if is_main:
                 logger.info(f"  Loaded scheduler state from {sched_file}")
@@ -401,6 +407,119 @@ class CleanupGameGRPO:
             self.old_model.eval()
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("  ✓ Old model updated")
+
+    # ────────────────────────────────────
+    # Role assignment (meta-call)
+    # ────────────────────────────────────
+
+    def _perform_role_assignment(self, envs, role_states):
+        """
+        Assign roles (eater/cleaner) to agents via a batched meta LLM call.
+        No gradients — this is a coordination call only.
+
+        All envs are batched into a single model.generate() call for speed.
+
+        Args:
+            envs: List of env instances to assign roles for.
+            role_states: List of role state dicts (one per env) to update in-place.
+        """
+        from utils.observation import get_global_role_context
+        from utils.prompts import create_role_assignment_prompt
+
+        config = self.config
+        tokenizer = self.tokenizer
+        accelerator = self.accelerator
+
+        _is_zero3 = (
+            accelerator is not None and
+            getattr(getattr(accelerator, 'state', None), 'deepspeed_plugin', None) is not None
+        )
+        gen_model = self.model if _is_zero3 else (
+            self.model.module if (accelerator is not None and hasattr(self.model, 'module'))
+            else self.model
+        )
+        device = self.device
+
+        import re as _re
+
+        # Build all prompts
+        prompts = []
+        for env, rs in zip(envs, role_states):
+            global_context = get_global_role_context(env)
+            prompts.append(create_role_assignment_prompt(
+                global_context, rs['roles'], config.num_agents, tokenizer
+            ))
+
+        # Batched generate
+        try:
+            inputs = tokenizer(
+                prompts, return_tensors="pt", truncation=True,
+                max_length=512, padding=True
+            ).to(device)
+            if "attention_mask" not in inputs:
+                inputs["attention_mask"] = torch.ones_like(inputs["input_ids"])
+
+            with torch.no_grad():
+                outputs = gen_model.generate(
+                    **inputs,
+                    max_new_tokens=200,
+                    temperature=0.7,
+                    do_sample=True,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                )
+        except Exception as e:
+            logger.warning(f"Batched role assignment generate failed: {e}, keeping current roles")
+            return
+
+        # Parse each response
+        for idx, (env, rs) in enumerate(zip(envs, role_states)):
+            current_roles = rs['roles']
+            try:
+                gen_ids = outputs[idx][inputs.input_ids[idx].shape[0]:]
+                response = tokenizer.decode(gen_ids, skip_special_tokens=True)
+
+                response_clean = _re.sub(
+                    r'<think>.*?</think>', '', response, flags=_re.DOTALL
+                ).strip()
+                if not response_clean:
+                    response_clean = response
+
+                json_match = None
+                start = response_clean.find('{')
+                if start != -1:
+                    depth = 0
+                    for i in range(start, len(response_clean)):
+                        if response_clean[i] == '{':
+                            depth += 1
+                        elif response_clean[i] == '}':
+                            depth -= 1
+                            if depth == 0:
+                                try:
+                                    json_match = json.loads(response_clean[start:i + 1])
+                                except json.JSONDecodeError:
+                                    pass
+                                break
+
+                if json_match is not None:
+                    logger.info(
+                        f"Role assignment env {idx}: {json_match} "
+                        f"(raw: '{response_clean[:120]}')"
+                    )
+                    for aid_str, role_str in json_match.items():
+                        try:
+                            aid = int(aid_str)
+                        except (ValueError, TypeError):
+                            continue
+                        if role_str in ('eater', 'cleaner') and aid in current_roles:
+                            current_roles[aid] = role_str
+                else:
+                    logger.warning(
+                        f"Role assignment env {idx}: no valid JSON "
+                        f"(preview='{response[:200]}')"
+                    )
+            except Exception as e:
+                logger.debug(f"Role assignment parse failed for env {idx}: {e}")
 
     # ────────────────────────────────────
     # Delegation to utils
@@ -964,6 +1083,7 @@ def main():
         samples_per_micro_batch=args.samples_per_micro_batch,
         micro_batch_size=args.micro_batch_size,
         old_model_update_interval=args.old_model_update_interval,
+        role_assignment_interval=args.role_assignment_interval,
         eval_interval=args.eval_interval,
         num_eval_episodes=args.num_eval_episodes,
         log_trajectory=args.log_trajectory,
@@ -1001,7 +1121,7 @@ def main():
                     state_dict = load_file(adapter_path)
                 else:
                     adapter_path = os.path.join(model_ckpt, "adapter_model.bin")
-                    state_dict = torch.load(adapter_path, map_location="cpu")
+                    state_dict = torch.load(adapter_path, map_location="cpu", weights_only=False)
                 set_peft_model_state_dict(
                     trainer.accelerator.unwrap_model(trainer.model)
                     if trainer.accelerator is not None else trainer.model,
