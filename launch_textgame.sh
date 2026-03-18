@@ -1,13 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=grpo_textgame
 #SBATCH --account=PAS2138
-#SBATCH --time=04:00:00
+#SBATCH --time=100:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --gpus-per-node=2          # ← keep in sync with NUM_GPUS below (1 or 2)
 #SBATCH --mem=128GB
 #SBATCH --output=grpo_textgame_%j.out
 #SBATCH --error=grpo_textgame_%j.err
+
 
 #
 # SLURM batch script for grpo_textgame.py — supports both text and compound modes.
@@ -113,28 +114,28 @@ ACTION_TOKENS=128           # tokens for stage 2 action/JSON generation
 # ── Training ───────────────────────────────────────────────────────────────
 TOTAL_EPISODES=4096
 EPISODES_PER_GPU=16         # episodes each GPU collects per group
-MAX_ENV_STEPS=30
+MAX_ENV_STEPS=50
 NUM_AGENTS=3
-LEARNING_RATE=1e-5
+LEARNING_RATE=1e-6
 LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 
 # ── Inner optimization (PPO-style) ─────────────────────────────────────────
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
-SAMPLES_PER_MICRO_BATCH=8  # A100 40GB has headroom; lower to 3 if OOM
-MACRO_INFER_BATCH=24
+SAMPLES_PER_MICRO_BATCH=5  # A100 40GB has headroom; lower to 3 if OOM
+MACRO_INFER_BATCH=16
 # ── Old model update frequency ────────────────────────────────────────────
 OLD_MODEL_UPDATE_INTERVAL=1  # update old model every N groups
 
 
 # ── Role switching ────────────────────────────────────────────────────────
-ROLE_ASSIGNMENT_INTERVAL=10  # reassign agent roles every N env steps (0=disabled)
+ROLE_ASSIGNMENT_INTERVAL=10 # reassign agent roles every N env steps (0=disabled)
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
 
 # ── Output ────────────────────────────────────────────────────────────────
-OUTPUT_DIR="./grpo_textgame_checkpoints_compound_dirt0.2"  # will be created if it doesn't exist
+OUTPUT_DIR="./grpo_textgame_checkpoints_compound_norole_ascend_sbatch_1e-6_try3"  # will be created if it doesn't exist
 NUM_EVAL_EPISODES=20
 
 # ── Wandb ─────────────────────────────────────────────────────────────────
@@ -255,6 +256,7 @@ accelerate launch \
     --num_eval_episodes $NUM_EVAL_EPISODES \
     --eval_interval 64 \
     --seed 42 \
+    --resume_from "./grpo_textgame_checkpoints_compound_norole_ascend_sbatch_1e-6_try2" \
     $DEEPSPEED_PY_FLAG \
     $WANDB_ARGS \
     2>&1 | tee "$OUTPUT_DIR/training_log_${SLURM_JOB_ID:-local}.txt"

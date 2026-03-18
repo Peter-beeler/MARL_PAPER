@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
-    """Pre-generate fixed initial states for evaluation."""
+    """Pre-generate random initial states for evaluation."""
     from env_move import CleanupEnvMove, Config as EnvConfigMove
 
     eval_states = []
@@ -22,7 +22,7 @@ def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
         eval_env = CleanupEnvMove(EnvConfigMove(
             n_agents=config.num_agents,
             max_steps=config.max_env_steps,
-            seed=config.seed + 1000 + i,
+            seed=None,  # fully random
             eat_reward=config.eat_reward,
         ))
         eval_env.reset()

@@ -189,10 +189,10 @@ class CleanupGameGRPO:
             )
             logger.info(f"Initialized wandb project: {config.wandb_project}")
 
-        # ── Pre-generate fixed evaluation states ──
+        # ── Pre-generate random evaluation states ──
         self.eval_states = _generate_eval_states(self.env_config, config, num_states=20)
         if self.accelerator is None or self.accelerator.is_main_process:
-            logger.info(f"Generated {len(self.eval_states)} fixed evaluation states")
+            logger.info(f"Generated {len(self.eval_states)} random evaluation states")
 
         # ── Signal handlers for graceful shutdown ──
         self._interrupted = False
@@ -274,9 +274,12 @@ class CleanupGameGRPO:
             logger.warning(f"  Failed to save model: {e}")
 
     def _save_training_state(self, episode, group_num, best_eval_reward):
-        """Save optimizer, scheduler, and training metadata for resuming.
+        """Save scheduler and training metadata for resuming.
 
-        Writes atomically alongside the latest checkpoint.
+        Called only from the main process.  With DeepSpeed ZeRO the optimizer
+        state is sharded across ranks and cannot be saved from a single rank,
+        so we intentionally skip it — on resume the optimizer restarts fresh
+        while the model weights (saved separately as adapter) are restored.
         """
         accelerator = self.accelerator
         config = self.config
@@ -291,14 +294,16 @@ class CleanupGameGRPO:
                 shutil.rmtree(tmp_path)
             os.makedirs(tmp_path, exist_ok=True)
 
-            # Save optimizer & scheduler state
-            torch.save(
-                self.optimizer.state_dict(),
-                os.path.join(tmp_path, "optimizer.pt"),
-            )
+            # Save scheduler state (same on all ranks, safe from main)
             torch.save(
                 self.scheduler.state_dict(),
                 os.path.join(tmp_path, "scheduler.pt"),
+            )
+
+            # Save eval states so resumed training uses the same eval states
+            torch.save(
+                self.eval_states,
+                os.path.join(tmp_path, "eval_states.pt"),
             )
 
             # Save training metadata
@@ -351,21 +356,34 @@ class CleanupGameGRPO:
         with open(metadata_file, "r") as f:
             metadata = json.load(f)
 
-        # Load optimizer state
-        opt_file = os.path.join(state_path, "optimizer.pt")
-        if os.path.exists(opt_file):
-            opt_state = torch.load(opt_file, map_location="cpu", weights_only=False)
-            self.optimizer.load_state_dict(opt_state)
-            if is_main:
-                logger.info(f"  Loaded optimizer state from {opt_file}")
+        # NOTE: Optimizer state is NOT saved/loaded because DeepSpeed ZeRO
+        # shards it across ranks and single-rank save is incompatible.
+        # The optimizer will restart fresh; model weights carry the training progress.
+        if is_main:
+            logger.info("  Optimizer state not restored (fresh optimizer on resume)")
 
         # Load scheduler state
         sched_file = os.path.join(state_path, "scheduler.pt")
         if os.path.exists(sched_file):
-            sched_state = torch.load(sched_file, map_location="cpu", weights_only=False)
-            self.scheduler.load_state_dict(sched_state)
-            if is_main:
-                logger.info(f"  Loaded scheduler state from {sched_file}")
+            try:
+                sched_state = torch.load(sched_file, map_location="cpu", weights_only=False)
+                self.scheduler.load_state_dict(sched_state)
+                if is_main:
+                    logger.info(f"  Loaded scheduler state from {sched_file}")
+            except Exception as e:
+                if is_main:
+                    logger.warning(f"  Could not load scheduler state (will use fresh scheduler): {e}")
+
+        # Load eval states (so resumed training uses the same eval states)
+        eval_states_file = os.path.join(state_path, "eval_states.pt")
+        if os.path.exists(eval_states_file):
+            try:
+                self.eval_states = torch.load(eval_states_file, map_location="cpu", weights_only=False)
+                if is_main:
+                    logger.info(f"  Loaded {len(self.eval_states)} eval states from checkpoint")
+            except Exception as e:
+                if is_main:
+                    logger.warning(f"  Could not load eval states (using freshly generated): {e}")
 
         # Restore training counters
         self.training_step = metadata.get("training_step", 0)
@@ -608,21 +626,18 @@ class CleanupGameGRPO:
                 config.episodes_per_gpu if accelerator is not None else config.episodes_per_update
             )
 
-            # Generate a unique initial state for this group so that:
+            # Generate a random initial state for this group so that:
             #  - all trajectories within a group share the same init (for GRPO advantages)
             #  - different groups get different initial states (for training diversity)
-            _group_seed = config.seed + group_num
-            if accelerator is not None:
-                _group_seed += accelerator.process_index * 10000
-            _seed_env = TrainEnvClass(EnvConfigMove(
+            _rand_env = TrainEnvClass(EnvConfigMove(
                 n_agents=config.num_agents,
                 max_steps=config.max_env_steps,
-                seed=_group_seed,
+                seed=None,  # fully random
                 eat_reward=config.eat_reward,
             ))
-            _seed_env.reset()
-            group_init_state = _seed_env.get_state()
-            del _seed_env
+            _rand_env.reset()
+            group_init_state = _rand_env.get_state()
+            del _rand_env
 
             if accelerator is not None:
                 total_needed = config.episodes_per_gpu
