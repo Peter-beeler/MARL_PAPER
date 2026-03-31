@@ -27,6 +27,8 @@ import sys
 import argparse
 import time
 import logging
+import json
+import re as _re
 
 import numpy as np
 import torch
@@ -34,7 +36,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from env_move import CleanupEnvMove, Config as EnvConfigMove
+from env.cleanup import CleanupEnvMove, Config as EnvConfigMove
 from utils.config import GRPOConfig
 from utils.model_setup import AllowOnlyActionWords
 
@@ -70,11 +72,97 @@ class ModelWrapper:
         # Mode-specific attributes expected by generation code
         self.action_words = ["up", "down", "left", "right", "clean", "eat", "stay"]
         if config.action_mode == "compound":
-            self.helper_functions = ["move_to", "clean_at", "eat_at", "random_explore"]
+            self.helper_functions = [
+                "move_to", "clean_at", "eat_at", "random_explore",
+                "find_nearest_apples", "find_nearest_dirts",
+            ]
 
         # Text-mode constrained decoding (set but not used by current generation code)
         if config.action_mode == "text":
             self.action_logits_processor = AllowOnlyActionWords(tokenizer, self.action_words)
+
+    def _perform_role_assignment(self, envs, role_states):
+        """Assign roles (eater/cleaner) via LLM meta-call (no gradients)."""
+        from utils.observation import get_global_role_context
+        from utils.prompts import create_role_assignment_prompt
+
+        config = self.config
+        tokenizer = self.tokenizer
+        device = self.device
+
+        prompts = []
+        for env, rs in zip(envs, role_states):
+            global_context = get_global_role_context(env)
+            prompts.append(create_role_assignment_prompt(
+                global_context, rs['roles'], config.num_agents, tokenizer
+            ))
+
+        try:
+            inputs = tokenizer(
+                prompts, return_tensors="pt", truncation=True,
+                max_length=512, padding=True
+            ).to(device)
+            if "attention_mask" not in inputs:
+                inputs["attention_mask"] = torch.ones_like(inputs["input_ids"])
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=200,
+                    temperature=0.7,
+                    do_sample=True,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                )
+        except Exception as e:
+            logger.warning(f"Batched role assignment generate failed: {e}, keeping current roles")
+            return None
+
+        for idx, (env, rs) in enumerate(zip(envs, role_states)):
+            current_roles = rs['roles']
+            try:
+                gen_ids = outputs[idx][inputs.input_ids[idx].shape[0]:]
+                response = tokenizer.decode(gen_ids, skip_special_tokens=True)
+
+                response_clean = _re.sub(
+                    r'<think>.*?</think>', '', response, flags=_re.DOTALL
+                ).strip()
+                if not response_clean:
+                    response_clean = response
+
+                json_match = None
+                start = response_clean.find('{')
+                if start != -1:
+                    depth = 0
+                    for i in range(start, len(response_clean)):
+                        if response_clean[i] == '{':
+                            depth += 1
+                        elif response_clean[i] == '}':
+                            depth -= 1
+                            if depth == 0:
+                                try:
+                                    json_match = json.loads(response_clean[start:i + 1])
+                                except json.JSONDecodeError:
+                                    pass
+                                break
+
+                if json_match is not None:
+                    for aid_str, role_str in json_match.items():
+                        try:
+                            aid = int(aid_str)
+                        except (ValueError, TypeError):
+                            continue
+                        if role_str in ('eater', 'cleaner') and aid in current_roles:
+                            current_roles[aid] = role_str
+                else:
+                    logger.warning(
+                        f"Role assignment env {idx}: no valid JSON "
+                        f"(preview='{response[:200]}')"
+                    )
+            except Exception as e:
+                logger.debug(f"Role assignment parse failed for env {idx}: {e}")
+
+        return None
 
 
 # ────────────────────────────────────────────────────────────────
@@ -246,6 +334,10 @@ def parse_args():
     p.add_argument("--clean_reward", type=float, default=0.0)
     p.add_argument("--seed", type=int, default=42)
 
+    # Role assignment
+    p.add_argument("--role_assignment_interval", type=int, default=0,
+                   help="Reassign agent roles every N env steps (0=disabled)")
+
     # Evaluation
     p.add_argument("--num_eval_episodes", type=int, default=20)
     p.add_argument("--parallel_envs", type=int, default=4)
@@ -274,9 +366,10 @@ def main():
         num_agents=args.num_agents,
         max_env_steps=args.max_env_steps,
         eat_reward=args.eat_reward,
-        clean_reward=args.clean_reward,
         seed=args.seed,
         macro_infer_batch=args.macro_infer_batch,
+        role_assignment_interval=args.role_assignment_interval,
+        train_on_role_tokens=False,
         use_accelerate=False,
         use_deepspeed=False,
         device=args.device,
@@ -308,9 +401,10 @@ def main():
     # ── Evaluate each model ──
     results = {}
 
+    role_desc = f"role_interval={config.role_assignment_interval}" if config.role_assignment_interval > 0 else "no_role"
     logger.info(f"\n{'=' * 70}")
-    logger.info(f"MODEL COMPARISON — mode={config.action_mode}, agents={config.num_agents}, "
-                f"steps={config.max_env_steps}")
+    logger.info(f"MODEL COMPARISON — mode={config.action_mode}, {role_desc}, "
+                f"agents={config.num_agents}, steps={config.max_env_steps}")
     logger.info(f"{'=' * 70}\n")
 
     for ckpt_path, label in zip(checkpoints, labels):

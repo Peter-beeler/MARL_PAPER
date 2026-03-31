@@ -47,6 +47,10 @@ def parse_args():
                         help="Reward for eating an apple (default: 1.0)")
     parser.add_argument("--role_assignment_interval", type=int, default=10,
                         help="Reassign agent roles (eater/cleaner) every N env steps (0=disabled)")
+    parser.add_argument("--train_on_role_tokens", action="store_true", default=True,
+                        help="Include role-aware action token probs in GRPO loss (default: True)")
+    parser.add_argument("--no_train_on_role_tokens", action="store_false", dest="train_on_role_tokens",
+                        help="Exclude role-aware action token probs from GRPO loss")
     parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--old_model_update_interval", type=int, default=1,
                         help="Update old model every N groups (default: 1 = every group)")

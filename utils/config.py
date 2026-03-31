@@ -67,6 +67,7 @@ class GRPOConfig:
     max_env_steps: int = 50
     eat_reward: float = 1.0
     role_assignment_interval: int = 10  # reassign agent roles every N env steps
+    train_on_role_tokens: bool = True   # include role-aware action token probs in GRPO loss
 
     # Checkpoint settings
     output_dir: str = "./grpo_textgame_checkpoints"

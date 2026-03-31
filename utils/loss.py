@@ -81,9 +81,14 @@ def create_minibatch_iterator(trajectories: List[Dict], minibatch_size: int):
         yield [trajectories[i] for i in indices[start_idx:end_idx]]
 
 
-def flatten_trajectories(trajectories: List[Dict]) -> List[Dict]:
+def flatten_trajectories(trajectories: List[Dict], train_on_role_tokens: bool = True) -> List[Dict]:
     """
     Flatten trajectories into individual (prompt_ids, action_ids, advantage, old_log_prob) samples.
+
+    Args:
+        trajectories: List of trajectory dicts.
+        train_on_role_tokens: If True, also include role-assignment meta-call token probs
+            in the GRPO loss. Agent action samples are always included.
 
     Returns:
         List of sample dicts with keys:
@@ -92,6 +97,8 @@ def flatten_trajectories(trajectories: List[Dict]) -> List[Dict]:
     all_samples = []
     for traj in trajectories:
         advantage = traj["advantage"]
+
+        # Agent action samples (always included)
         for i in range(len(traj["prompts"])):
             action_input_ids = traj["action_input_ids"][i]
             action_ids = traj["action_ids"][i]
@@ -107,6 +114,20 @@ def flatten_trajectories(trajectories: List[Dict]) -> List[Dict]:
                 "advantage": advantage,
                 "old_log_prob": traj["log_probs"][i]
             })
+
+        # Role-assignment meta-call samples (only when flag is on)
+        if train_on_role_tokens:
+            for rs in traj.get("role_assignment_samples", []):
+                if rs["input_ids"] is None or rs["gen_ids"] is None:
+                    continue
+                if len(rs["gen_ids"]) == 0:
+                    continue
+                all_samples.append({
+                    "prompt_ids": rs["input_ids"],
+                    "action_ids": rs["gen_ids"],
+                    "advantage": advantage,
+                    "old_log_prob": rs["log_prob"]
+                })
 
     return all_samples
 

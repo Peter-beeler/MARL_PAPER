@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
     """Pre-generate random initial states for evaluation."""
-    from env_move import CleanupEnvMove, Config as EnvConfigMove
+    from env.cleanup import CleanupEnvMove, Config as EnvConfigMove
 
     eval_states = []
     for i in range(num_states):
@@ -35,6 +35,7 @@ def _generate_eval_states(env_config, config, num_states: int = 20) -> List:
 def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
     """
     Evaluate the trained model on fixed initial states using parallel rollout.
+    Logs all eval trajectories to file when config.log_trajectory is True.
 
     Args:
         trainer: CleanupGameGRPO instance.
@@ -44,7 +45,7 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
     Returns:
         (avg_reward, std_reward)
     """
-    from .rollout import run_episode, run_parallel_episodes
+    from .rollout import run_episode, run_parallel_episodes, log_episode_to_file
 
     config = trainer.config
     accelerator = trainer.accelerator
@@ -69,6 +70,7 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
 
     local_rewards = []
     local_episode_times = []
+    local_trajectories = []  # collect all eval trajectories for logging
 
     # Determine parallel batch size for eval
     parallel_envs = config.parallel_envs if config.parallel_envs > 0 else (
@@ -93,11 +95,11 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
                 ep_idx = batch_indices[j]
                 local_rewards.append(traj["total_reward"])
                 local_episode_times.append(traj["rollout_time"])
+                local_trajectories.append((ep_idx, traj))
                 logger.info(
                     f"  GPU{process_index} Ep{ep_idx + 1}: R={traj['total_reward']:.2f}, "
                     f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
                 )
-                del traj
         except Exception as e:
             logger.warning(f"GPU{process_index}: Parallel eval batch failed: {e}, falling back to sequential")
             for ep_idx in batch_indices:
@@ -106,17 +108,23 @@ def evaluate(trainer, num_episodes: int = 20, current_episode: int = None):
                     traj = run_episode(trainer, use_ref_model=False, log_samples=False, initial_state=initial_state)
                     local_rewards.append(traj["total_reward"])
                     local_episode_times.append(traj["rollout_time"])
+                    local_trajectories.append((ep_idx, traj))
                     logger.info(
                         f"  GPU{process_index} Ep{ep_idx + 1}: R={traj['total_reward']:.2f}, "
                         f"Steps={traj['steps']}, Time={traj['rollout_time']:.2f}s"
                     )
-                    del traj
                 except Exception as e2:
                     logger.error(f"GPU {process_index}: Evaluation episode {ep_idx + 1} failed: {e2}")
 
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         idx += len(batch_indices)
+
+    # Log all eval trajectories to file (main process only)
+    if config.log_trajectory and (accelerator is None or accelerator.is_main_process):
+        eval_label = f"eval_ep{current_episode}" if current_episode is not None else "eval"
+        for ep_idx, traj in sorted(local_trajectories, key=lambda x: x[0]):
+            log_episode_to_file(config, traj, group_num=eval_label, episode_idx=ep_idx, accelerator=accelerator)
 
     # Gather results from all GPUs
     if accelerator is not None:
@@ -201,10 +209,10 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
         use_ref_model: If True, use reference model.
         save_to_file: Optional filepath to save visualization.
     """
-    from env_move import CleanupEnvMove
-    from .generation import generate_actions_batch
-    # === TODO: observation.py must be implemented before this works ===
-    from .observation import obs_to_text
+    from env.cleanup import CleanupEnvMove
+    from .generation import generate_actions_multi_env_batch
+    from .observation import obs_to_text, get_role_specific_observation, check_action_continuation
+    from .rollout import _init_role_states
 
     config = trainer.config
     accelerator = trainer.accelerator
@@ -230,9 +238,23 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
         model = trainer.ref_model if use_ref_model else trainer.model
     model.eval()
 
+    # ── Role switching setup (same as run_parallel_episodes) ──
+    role_interval = getattr(config, 'role_assignment_interval', 0)
+    use_roles = (role_interval > 0 and config.action_mode == "compound")
+
+    if use_roles:
+        role_states = _init_role_states(1, config.num_agents)
+        trainer._role_states = role_states
+        if hasattr(trainer, '_perform_role_assignment'):
+            trainer._perform_role_assignment([env], role_states)
+    else:
+        role_states = None
+        trainer._role_states = None
+
     total_reward = 0
     output_lines = []
     step_times = []
+    macro_infer_batch = getattr(config, 'macro_infer_batch', 24)
 
     def log_and_save(line):
         logger.info(line)
@@ -246,6 +268,13 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
         log_and_save(f"  {line}")
     log_and_save("")
 
+    if use_roles and role_states is not None:
+        roles_str = ", ".join(
+            f"Agent {aid}: {role}" for aid, role in sorted(role_states[0]['roles'].items())
+        )
+        log_and_save(f"[ROLE ASSIGNMENT] {roles_str}")
+        log_and_save("")
+
     for step in range(config.max_env_steps):
         step_start_time = time.time()
 
@@ -256,7 +285,12 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
         actions = {}
         step_info = []
 
-        batch_results = generate_actions_batch(trainer, obs, step, env, model)
+        # Use multi-env batch generation (handles roles properly)
+        active_env_data = [(0, env, obs)]
+        all_results = generate_actions_multi_env_batch(
+            trainer, active_env_data, step, model, macro_infer_batch
+        )
+        batch_results = all_results[0]
 
         for agent_id in range(1, config.num_agents + 1):
             ax, ay = env.agents[agent_id]
@@ -265,12 +299,27 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
              action_prompt, action_input_ids, action_ids) = batch_results[agent_id]
             actions[agent_id] = action
 
-            obs_nl = obs_to_text(obs[agent_id], env, agent_id, config)
+            # Build the obs text matching what was sent to the model
+            role = None
+            if use_roles and role_states is not None:
+                role = role_states[0].get('roles', {}).get(agent_id)
+            if role and config.action_mode == "compound":
+                obs_nl = get_role_specific_observation(env, agent_id, role)
+                tool_res = role_states[0].get('tool_results', {}).get(agent_id, '')
+                if tool_res:
+                    obs_nl += f"\n[TOOL RESULTS] {tool_res}"
+                last_act = role_states[0].get('last_actions', {}).get(agent_id)
+                cont_hint = check_action_continuation(env, agent_id, last_act)
+                if cont_hint:
+                    obs_nl += f"\n[CONTINUE] {cont_hint}"
+            else:
+                obs_nl = obs_to_text(obs[agent_id], env, agent_id, config)
 
             step_info.append({
                 'agent_id': agent_id,
                 'position': (ax, ay),
                 'obs_nl': obs_nl,
+                'role': role,
                 'thinking': thinking_text.strip() if thinking_text else '',
                 'response': full_response.strip() if full_response else '',
                 'action_text': action_text.strip() if action_text else '',
@@ -279,9 +328,16 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
                 'log_prob': log_prob.item() if torch.is_tensor(log_prob) else float(log_prob),
             })
 
+            # Track last action for continuation hints
+            if use_roles and role_states is not None:
+                from .rollout import _extract_action_json
+                parsed = _extract_action_json(full_response)
+                role_states[0]['last_actions'][agent_id] = parsed
+
         log_and_save("\nAgent Decisions:")
         for info in step_info:
-            log_and_save(f"\n  Agent {info['agent_id']} at {info['position']}:")
+            role_tag = f" [{info['role'].upper()}]" if info.get('role') else ""
+            log_and_save(f"\n  Agent {info['agent_id']}{role_tag} at {info['position']}:")
             log_and_save(f"    Observation: {info['obs_nl']}")
 
             if config.action_mode == "compound":
@@ -314,6 +370,18 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
             log_and_save(f"    Log Prob: {info['log_prob']:.4f}")
 
         obs, rewards, done, info = env.step(actions)
+
+        # ── Role reassignment after env.step ──
+        if use_roles and role_interval > 0 and (step + 1) % role_interval == 0:
+            if hasattr(trainer, '_perform_role_assignment'):
+                old_roles = dict(role_states[0]['roles'])
+                trainer._perform_role_assignment([env], role_states)
+                new_roles = role_states[0]['roles']
+                if new_roles != old_roles:
+                    roles_str = ", ".join(
+                        f"Agent {aid}: {role}" for aid, role in sorted(new_roles.items())
+                    )
+                    log_and_save(f"\n  >>> [ROLE SWITCH at step {step + 1}] {roles_str}")
 
         log_and_save("\n  Step Results:")
         step_reward = sum(rewards.values())
@@ -354,6 +422,9 @@ def visualize_rollout(trainer, use_ref_model: bool = False, save_to_file: Option
     log_and_save(f"  Average Step Time: {avg_step_time:.2f}s")
     log_and_save(f"  Total Rollout Time: {total_rollout_time:.2f}s")
     log_and_save(f"{'=' * 80}\n")
+
+    # Clean up role state
+    trainer._role_states = None
 
     if save_to_file:
         with open(save_to_file, 'w') as f:

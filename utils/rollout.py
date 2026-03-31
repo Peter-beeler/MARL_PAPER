@@ -40,7 +40,7 @@ def run_episode(
     """
     EnvClass = getattr(trainer, 'train_env_class', None)
     if EnvClass is None:
-        from env_move import CleanupEnvMove as EnvClass
+        from env.cleanup import CleanupEnvMove as EnvClass
 
     start_time = time.time()
     config = trainer.config
@@ -205,7 +205,7 @@ def run_parallel_episodes(
     """
     EnvClass = getattr(trainer, 'train_env_class', None)
     if EnvClass is None:
-        from env_move import CleanupEnvMove as EnvClass
+        from env.cleanup import CleanupEnvMove as EnvClass
     from .generation import generate_actions_multi_env_batch
 
     start_time = time.time()

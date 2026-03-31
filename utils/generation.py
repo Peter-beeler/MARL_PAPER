@@ -125,6 +125,38 @@ def _get_fallback_action(env, agent_id) -> str:
     return "stay"
 
 
+def _extract_action_name(response: str) -> str:
+    """Quick extraction of the high-level action name from a model response.
+    Returns '' if no valid JSON action found."""
+    try:
+        fence_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if fence_match:
+            js = fence_match.group(1)
+        else:
+            start = response.find('{')
+            if start == -1:
+                return ''
+            depth = 0
+            end = -1
+            for ci in range(start, len(response)):
+                if response[ci] == '{':
+                    depth += 1
+                elif response[ci] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end = ci
+                        break
+            if end == -1:
+                return ''
+            js = response[start:end + 1]
+        # Apply same sanitization as parse_and_execute_action
+        js = re.sub(r'"(\w+):\s*(\{)', r'"\1": \2', js)
+        js = re.sub(r'"(\w+):\s*(\d)', r'"\1": \2', js)
+        return json.loads(js).get('action', '')
+    except Exception:
+        return ''
+
+
 def parse_and_execute_action(response: str, agent_id: int, env) -> str:
     """
     Parse JSON from model response, call the appropriate helper, return low-level env action.
@@ -164,6 +196,10 @@ def parse_and_execute_action(response: str, agent_id: int, env) -> str:
         json_str = response[start:end + 1]
 
     try:
+        # Sanitize common LLM JSON errors: missing closing " before : or {
+        # e.g. "args:{} → "args":{}   or  "coord_x:5 → "coord_x":5
+        json_str = re.sub(r'"(\w+):\s*(\{)', r'"\1": \2', json_str)
+        json_str = re.sub(r'"(\w+):\s*(\d)', r'"\1": \2', json_str)
         data = json.loads(json_str)
         action_name = data.get('action', '')
         args = data.get('args', {})

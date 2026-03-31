@@ -37,8 +37,8 @@ from transformers import set_seed
 # ── Path setup ──
 sys.path.insert(0, os.path.dirname(__file__))
 
-from env_move import CleanupEnvMove as EvalEnvClass, Config as EnvConfigMove
-from env_copy import CleanupEnvMove as TrainEnvClass
+from env.cleanup import CleanupEnvMove as EvalEnvClass, Config as EnvConfigMove
+from env.cleanup_copy import CleanupEnvMove as TrainEnvClass
 
 from utils.config import GRPOConfig
 from utils.model_setup import (
@@ -47,7 +47,7 @@ from utils.model_setup import (
     AllowOnlyActionWords, log_cuda_memory,
 )
 from utils.eval import _generate_eval_states, evaluate, visualize_rollout
-from utils.rollout import run_episode, run_parallel_episodes, log_episode_to_file
+from utils.rollout import run_episode, run_parallel_episodes
 from utils.loss import compute_advantages, create_minibatch_iterator, flatten_trajectories, compute_loss_on_samples
 from utils.args import parse_args
 
@@ -189,10 +189,18 @@ class CleanupGameGRPO:
             )
             logger.info(f"Initialized wandb project: {config.wandb_project}")
 
-        # ── Pre-generate random evaluation states ──
-        self.eval_states = _generate_eval_states(self.env_config, config, num_states=20)
-        if self.accelerator is None or self.accelerator.is_main_process:
-            logger.info(f"Generated {len(self.eval_states)} random evaluation states")
+        # ── Pre-generate random evaluation states (or load from file) ──
+        eval_states_file = os.path.join(config.output_dir, "eval_states.pt")
+        if os.path.exists(eval_states_file):
+            self.eval_states = torch.load(eval_states_file, map_location="cpu", weights_only=False)
+            if self.accelerator is None or self.accelerator.is_main_process:
+                logger.info(f"Loaded {len(self.eval_states)} eval states from {eval_states_file}")
+        else:
+            self.eval_states = _generate_eval_states(self.env_config, config, num_states=20)
+            if self.accelerator is None or self.accelerator.is_main_process:
+                os.makedirs(config.output_dir, exist_ok=True)
+                torch.save(self.eval_states, eval_states_file)
+                logger.info(f"Generated and saved {len(self.eval_states)} eval states to {eval_states_file}")
 
         # ── Signal handlers for graceful shutdown ──
         self._interrupted = False
@@ -375,15 +383,24 @@ class CleanupGameGRPO:
                     logger.warning(f"  Could not load scheduler state (will use fresh scheduler): {e}")
 
         # Load eval states (so resumed training uses the same eval states)
+        # Check training_state/ first, then top-level eval_states.pt
         eval_states_file = os.path.join(state_path, "eval_states.pt")
+        if not os.path.exists(eval_states_file):
+            eval_states_file = os.path.join(resume_dir, "eval_states.pt")
         if os.path.exists(eval_states_file):
             try:
                 self.eval_states = torch.load(eval_states_file, map_location="cpu", weights_only=False)
                 if is_main:
-                    logger.info(f"  Loaded {len(self.eval_states)} eval states from checkpoint")
+                    logger.info(f"  Loaded {len(self.eval_states)} eval states from {eval_states_file}")
+                    # Save to current output_dir so they persist for this run
+                    cur_eval_file = os.path.join(self.config.output_dir, "eval_states.pt")
+                    if os.path.abspath(cur_eval_file) != os.path.abspath(eval_states_file):
+                        os.makedirs(self.config.output_dir, exist_ok=True)
+                        torch.save(self.eval_states, cur_eval_file)
+                        logger.info(f"  Copied eval states to {cur_eval_file}")
             except Exception as e:
                 if is_main:
-                    logger.warning(f"  Could not load eval states (using freshly generated): {e}")
+                    logger.warning(f"  Could not load eval states (using existing): {e}")
 
         # Restore training counters
         self.training_step = metadata.get("training_step", 0)
@@ -400,7 +417,11 @@ class CleanupGameGRPO:
         return metadata
 
     def update_old_model(self):
-        """Copy current model weights to old model (θ_old ← θ)."""
+        """Copy current model weights to old model (θ_old ← θ).
+
+        The old model is kept on GPU only during rollout; after rollout it is
+        offloaded to CPU to free VRAM for the inner optimization loop.
+        """
         # With DeepSpeed the model is wrapped in a DeepSpeedEngine which
         # contains unpicklable ProcessGroup objects.  Always operate on
         # the unwrapped model for deepcopy / state_dict operations.
@@ -408,6 +429,8 @@ class CleanupGameGRPO:
             unwrapped = self.accelerator.unwrap_model(self.model)
         else:
             unwrapped = self.model
+
+        model_device = next(unwrapped.parameters()).device
 
         if self.old_model is None:
             if self.accelerator is None or self.accelerator.is_main_process:
@@ -421,10 +444,24 @@ class CleanupGameGRPO:
         else:
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("Updating old model with current weights...")
+            # Load state dict while old_model is still on CPU to avoid a
+            # GPU memory spike (model + old_model + temp state_dict).
+            # PyTorch's copy_ handles the GPU→CPU device transfer.
             self.old_model.load_state_dict(unwrapped.state_dict())
+            self.old_model.to(model_device)
             self.old_model.eval()
             if self.accelerator is None or self.accelerator.is_main_process:
                 logger.info("  ✓ Old model updated")
+
+    def _offload_old_model(self):
+        """Move old model to CPU to free GPU memory for inner optimization."""
+        if self.old_model is not None:
+            self.old_model.to("cpu")
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            rank = self.accelerator.process_index if self.accelerator is not None else 0
+            alloc = torch.cuda.memory_allocated() / 1024**3 if torch.cuda.is_available() else 0
+            logger.info(f"  [Rank {rank}] Old model offloaded to CPU (GPU mem: {alloc:.1f}GB)")
 
     # ────────────────────────────────────
     # Role assignment (meta-call)
@@ -437,9 +474,16 @@ class CleanupGameGRPO:
 
         All envs are batched into a single model.generate() call for speed.
 
+        When config.train_on_role_tokens is True, returns a list of per-env dicts
+        with keys (input_ids, gen_ids, log_prob) so the rollout can store them
+        for GRPO training. Otherwise returns None.
+
         Args:
             envs: List of env instances to assign roles for.
             role_states: List of role state dicts (one per env) to update in-place.
+
+        Returns:
+            List of {input_ids, gen_ids, log_prob} per env, or None.
         """
         from utils.observation import get_global_role_context
         from utils.prompts import create_role_assignment_prompt
@@ -488,7 +532,39 @@ class CleanupGameGRPO:
                 )
         except Exception as e:
             logger.warning(f"Batched role assignment generate failed: {e}, keeping current roles")
-            return
+            return None
+
+        # Compute log probs for role assignment tokens if needed for training
+        role_token_data = None
+        if config.train_on_role_tokens:
+            role_token_data = []
+            log_prob_model = self.old_model if self.old_model is not None else gen_model
+            for idx in range(len(envs)):
+                try:
+                    input_ids_i = inputs.input_ids[idx]
+                    gen_ids_i = outputs[idx][input_ids_i.shape[0]:]
+                    # Strip padding from input_ids
+                    pad_id = tokenizer.pad_token_id
+                    if pad_id is not None:
+                        mask = input_ids_i != pad_id
+                        input_ids_i = input_ids_i[mask]
+                    from utils.logprob import compute_batch_sequence_log_prob
+                    lp = compute_batch_sequence_log_prob(
+                        log_prob_model,
+                        [input_ids_i], [gen_ids_i],
+                        device, tokenizer.pad_token_id,
+                        need_grad=False
+                    )[0]
+                    role_token_data.append({
+                        "input_ids": input_ids_i.detach().cpu(),
+                        "gen_ids": gen_ids_i.detach().cpu(),
+                        "log_prob": lp.detach().item() if torch.is_tensor(lp) else float(lp),
+                    })
+                except Exception as e:
+                    logger.debug(f"Role assignment log prob failed for env {idx}: {e}")
+                    role_token_data.append({
+                        "input_ids": None, "gen_ids": None, "log_prob": -10.0,
+                    })
 
         # Parse each response
         for idx, (env, rs) in enumerate(zip(envs, role_states)):
@@ -520,7 +596,7 @@ class CleanupGameGRPO:
                                 break
 
                 if json_match is not None:
-                    logger.info(
+                    logger.debug(
                         f"Role assignment env {idx}: {json_match} "
                         f"(raw: '{response_clean[:120]}')"
                     )
@@ -538,6 +614,8 @@ class CleanupGameGRPO:
                     )
             except Exception as e:
                 logger.debug(f"Role assignment parse failed for env {idx}: {e}")
+
+        return role_token_data
 
     # ────────────────────────────────────
     # Delegation to utils
@@ -629,15 +707,53 @@ class CleanupGameGRPO:
             # Generate a random initial state for this group so that:
             #  - all trajectories within a group share the same init (for GRPO advantages)
             #  - different groups get different initial states (for training diversity)
-            _rand_env = TrainEnvClass(EnvConfigMove(
-                n_agents=config.num_agents,
-                max_steps=config.max_env_steps,
-                seed=None,  # fully random
-                eat_reward=config.eat_reward,
-            ))
-            _rand_env.reset()
-            group_init_state = _rand_env.get_state()
-            del _rand_env
+            # Rank 0 generates the state and broadcasts to all GPUs so advantages
+            # are computed over episodes with identical starting conditions.
+            if accelerator is None or accelerator.is_main_process:
+                _rand_env = TrainEnvClass(EnvConfigMove(
+                    n_agents=config.num_agents,
+                    max_steps=config.max_env_steps,
+                    seed=None,  # fully random
+                    eat_reward=config.eat_reward,
+                ))
+                _rand_env.reset()
+                group_init_state = _rand_env.get_state()
+                del _rand_env
+            else:
+                group_init_state = None
+
+            if accelerator is not None:
+                import pickle
+                if accelerator.is_main_process:
+                    state_bytes = pickle.dumps(group_init_state)
+                    state_tensor = torch.tensor(
+                        list(state_bytes), dtype=torch.uint8,
+                        device=accelerator.device
+                    )
+                    size_tensor = torch.tensor(
+                        [len(state_bytes)], dtype=torch.long,
+                        device=accelerator.device
+                    )
+                else:
+                    size_tensor = torch.tensor(
+                        [0], dtype=torch.long,
+                        device=accelerator.device
+                    )
+
+                torch.distributed.broadcast(size_tensor, src=0)
+                state_size = size_tensor.item()
+
+                if not accelerator.is_main_process:
+                    state_tensor = torch.zeros(
+                        state_size, dtype=torch.uint8,
+                        device=accelerator.device
+                    )
+                torch.distributed.broadcast(state_tensor, src=0)
+
+                if not accelerator.is_main_process:
+                    group_init_state = pickle.loads(
+                        bytes(state_tensor.cpu().tolist())
+                    )
 
             if accelerator is not None:
                 total_needed = config.episodes_per_gpu
@@ -730,13 +846,8 @@ class CleanupGameGRPO:
             else:
                 episode += len(trajectories)
 
-            # Log trajectory to file
-            if len(trajectories) > 0 and config.log_trajectory:
-                if accelerator is None or accelerator.is_main_process:
-                    import random
-                    random_idx = random.randint(0, len(trajectories) - 1)
-                    log_episode_to_file(config, trajectories[random_idx], group_num, random_idx, accelerator)
-                    logger.info(f"  Logged episode {random_idx} trajectory to {config.trajectory_log_file}")
+            # Offload old model to CPU — it's no longer needed until next group
+            self._offload_old_model()
 
             if len(trajectories) == 0:
                 if accelerator is None or accelerator.is_main_process:
@@ -780,7 +891,7 @@ class CleanupGameGRPO:
                             if accelerator is not None else self.device
                         )
 
-                        all_samples = flatten_trajectories(minibatch)
+                        all_samples = flatten_trajectories(minibatch, config.train_on_role_tokens)
                         total_samples = len(all_samples)
                         if total_samples == 0:
                             continue
@@ -1099,6 +1210,7 @@ def main():
         micro_batch_size=args.micro_batch_size,
         old_model_update_interval=args.old_model_update_interval,
         role_assignment_interval=args.role_assignment_interval,
+        train_on_role_tokens=args.train_on_role_tokens,
         eval_interval=args.eval_interval,
         num_eval_episodes=args.num_eval_episodes,
         log_trajectory=args.log_trajectory,

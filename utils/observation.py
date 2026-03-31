@@ -453,19 +453,12 @@ def get_role_specific_observation(env, agent_id: int, role: str) -> str:
         if visible_dirts:
             parts.append(f"({len(visible_dirts)} dirt nearby — not your priority.)")
 
-        # Global nearest apples (key info for eaters)
-        nearest = env._find_nearest_items(agent_id, "a", n=5)
-        if nearest:
-            na_strs = []
-            for x, y in nearest:
-                disp_y = (h - 1) - y
-                dist = abs(x - ax) + abs(y - ay)
-                na_strs.append(f"({x},{disp_y}) dist={dist}")
-            parts.append(f"[PRIORITY] Nearest apples on map: {', '.join(na_strs)}.")
-        else:
-            parts.append("No apples on the map currently. Cleaners need to clear more dirt!")
+        # Global counts only — use find_nearest_apples to get locations
         dirt_count = env._count_items("#")
-        parts.append(f"Map dirt: {dirt_count} (initial: {env.init_dirt_count}).")
+        apple_count = env._count_items("a")
+        parts.append(f"Map: {apple_count} apples, {dirt_count} dirt (initial: {env.init_dirt_count}).")
+        if apple_count > 0 and not visible_apples:
+            parts.append("Use find_nearest_apples to locate them.")
     else:  # cleaner
         # Emphasize dirts
         if visible_dirts:
@@ -476,23 +469,15 @@ def get_role_specific_observation(env, agent_id: int, role: str) -> str:
         if visible_apples:
             parts.append(f"({len(visible_apples)} apples nearby — not your priority.)")
 
-        # Global nearest dirts (key info for cleaners)
-        nearest = env._find_nearest_items(agent_id, "#", n=5)
-        if nearest:
-            nd_strs = []
-            for x, y in nearest:
-                disp_y = (h - 1) - y
-                dist = abs(x - ax) + abs(y - ay)
-                nd_strs.append(f"({x},{disp_y}) dist={dist}")
-            parts.append(f"[PRIORITY] Nearest dirt on map: {', '.join(nd_strs)}.")
-        else:
-            parts.append("No dirt on the map! Great job — river is clean.")
+        # Global counts only — use find_nearest_dirts to get locations
         dirt_count = env._count_items("#")
         apple_count = env._count_items("a")
         parts.append(
             f"Map status: {dirt_count} dirt remaining, {apple_count} apples on land. "
             f"Apples spawn faster when dirt drops below {env.init_dirt_count}."
         )
+        if dirt_count > 0 and not visible_dirts:
+            parts.append("Use find_nearest_dirts to locate them.")
 
     if nearby_agents:
         parts.append("Other agents nearby: " + ", ".join(nearby_agents) + ".")
@@ -542,8 +527,10 @@ def check_action_continuation(env, agent_id: int, last_action: Optional[dict]) -
     if ax == target_x and ay_disp == target_y_disp:
         return ""  # arrived
 
+    dist = abs(ax - target_x) + abs(ay_disp - target_y_disp)
     return (
-        f"You chose {action_name}({target_x},{target_y_disp}) last step and haven't "
-        f"arrived yet (currently at ({ax},{ay_disp})). Continue with "
-        f"{action_name}({target_x},{target_y_disp})."
+        f"You are executing {action_name}(coord_x={target_x}, coord_y={target_y_disp}) "
+        f"which takes multiple steps. You are at ({ax},{ay_disp}), target at "
+        f"({target_x},{target_y_disp}), distance={dist}. "
+        f'You MUST output: {{"action":"{action_name}","args":{{"coord_x":{target_x},"coord_y":{target_y_disp}}}}}'
     )

@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=grpo_textgame
 #SBATCH --account=PAS2138
-#SBATCH --time=100:00:00
+#SBATCH --time=120:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
-#SBATCH --gpus-per-node=2          # ← keep in sync with NUM_GPUS below (1 or 2)
+#SBATCH --gpus-per-node=2         # ← keep in sync with NUM_GPUS below (1 or 2)
 #SBATCH --mem=128GB
 #SBATCH --output=grpo_textgame_%j.out
 #SBATCH --error=grpo_textgame_%j.err
-
+#SBATCH --partition=nextgen
 
 #
 # SLURM batch script for grpo_textgame.py — supports both text and compound modes.
@@ -122,25 +122,26 @@ LOSS_TYPE="drgrpo"          # "grpo" or "drgrpo"
 # ── Inner optimization (PPO-style) ─────────────────────────────────────────
 NUM_INNER_EPOCHS=4
 MINIBATCH_SIZE=8
-SAMPLES_PER_MICRO_BATCH=5  # A100 40GB has headroom; lower to 3 if OOM
-MACRO_INFER_BATCH=16
+SAMPLES_PER_MICRO_BATCH=3  # A100 40GB has headroom; lower to 3 if OOM
+MACRO_INFER_BATCH=12
 # ── Old model update frequency ────────────────────────────────────────────
 OLD_MODEL_UPDATE_INTERVAL=1  # update old model every N groups
 
 
 # ── Role switching ────────────────────────────────────────────────────────
-ROLE_ASSIGNMENT_INTERVAL=10 # reassign agent roles every N env steps (0=disabled)
+ROLE_ASSIGNMENT_INTERVAL=0 # reassign agent roles every N env steps (0=disabled)
+TRAIN_ON_ROLE_TOKENS=true   # include role-aware action token probs in GRPO loss
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
 
 # ── Output ────────────────────────────────────────────────────────────────
-OUTPUT_DIR="./grpo_textgame_checkpoints_compound_norole_ascend_sbatch_1e-6_try3"  # will be created if it doesn't exist
+OUTPUT_DIR="./grpo_textgame_checkpoints_compound_norole_1e-6_noglobal"  # will be created if it doesn't exist
 NUM_EVAL_EPISODES=20
 
 # ── Wandb ─────────────────────────────────────────────────────────────────
 USE_WANDB=true
-WANDB_PROJECT="grpo_textgame"
+WANDB_PROJECT="grpo_textgame_V3"
 WANDB_ENTITY=""             # leave empty for default account
 WANDB_RUN_NAME=$OUTPUT_DIR  # use output dir as run name for easy identification
 
@@ -161,6 +162,7 @@ echo "  Minibatch size:          $MINIBATCH_SIZE"
 echo "  Micro-batch size:        $SAMPLES_PER_MICRO_BATCH"
 echo "  Old model update:        every $OLD_MODEL_UPDATE_INTERVAL groups"
 echo "  Role assignment:         every $ROLE_ASSIGNMENT_INTERVAL steps"
+echo "  Train on role tokens:    $TRAIN_ON_ROLE_TOKENS"
 echo "  Macro infer batch:       $MACRO_INFER_BATCH"
 echo "  Total episodes:          $TOTAL_EPISODES"
 echo "  Max env steps:           $MAX_ENV_STEPS"
@@ -216,6 +218,13 @@ if [ "$USE_DEEPSPEED" = true ]; then
     DEEPSPEED_PY_FLAG="--use_deepspeed"
 fi
 
+ROLE_TOKENS_FLAG=""
+if [ "$TRAIN_ON_ROLE_TOKENS" = true ]; then
+    ROLE_TOKENS_FLAG="--train_on_role_tokens"
+else
+    ROLE_TOKENS_FLAG="--no_train_on_role_tokens"
+fi
+
 WANDB_ARGS=""
 if [ "$USE_WANDB" = true ]; then
     WANDB_ARGS="--use_wandb --wandb_project $WANDB_PROJECT"
@@ -249,6 +258,7 @@ accelerate launch \
     --micro_batch_size $SAMPLES_PER_MICRO_BATCH \
     --old_model_update_interval $OLD_MODEL_UPDATE_INTERVAL \
     --role_assignment_interval $ROLE_ASSIGNMENT_INTERVAL \
+    $ROLE_TOKENS_FLAG \
     --macro_infer_batch $MACRO_INFER_BATCH \
     --eat_reward $EAT_REWARD \
     --output_dir "$OUTPUT_DIR" \
@@ -256,7 +266,6 @@ accelerate launch \
     --num_eval_episodes $NUM_EVAL_EPISODES \
     --eval_interval 64 \
     --seed 42 \
-    --resume_from "./grpo_textgame_checkpoints_compound_norole_ascend_sbatch_1e-6_try2" \
     $DEEPSPEED_PY_FLAG \
     $WANDB_ARGS \
     2>&1 | tee "$OUTPUT_DIR/training_log_${SLURM_JOB_ID:-local}.txt"
