@@ -181,12 +181,7 @@ class CleanupEnvMove:
         rewards = {i: 0.0 for i in self._agent_ids}
 
         # --- Snapshot distances BEFORE movement for potential-based shaping ---
-        pre_dirt_dist = {}
-        pre_apple_dist = {}
-        for i in self._agent_ids:
-            ax, ay = self.agents[i]
-            pre_dirt_dist[i] = self._nearest_item_dist(ax, ay, '#')
-            pre_apple_dist[i] = self._nearest_item_dist(ax, ay, 'a')
+        # (reward shaping removed — raw rewards only)
 
         # Compute desired moves with directional movement
         desired: Dict[int, Tuple[int, int]] = {}
@@ -252,36 +247,6 @@ class CleanupEnvMove:
                 rewards[i] += self.cfg.clean_reward
                 self.scores[i] += self.cfg.clean_reward
                 self.items[y][x] = None
-
-                # --- Shaped reward 1: cleaning bonus ---
-                # Encourages cleaning dirt to enable apple spawning.
-                rewards[i] += 0.1
-
-            else:
-                # --- Shaped reward 4: wasted action penalty ---
-                # Penalize eat/clean when nothing valid is at the agent's position.
-                if chosen_action.get(i) == "eat" and item != 'a':
-                    rewards[i] -= 0.01
-                elif chosen_action.get(i) == "clean" and item != '#':
-                    rewards[i] -= 0.01
-
-        # --- Shaped reward 2 & 3: potential-based approach bonuses ---
-        for i in self._agent_ids:
-            ax, ay = self.agents[i]
-
-            # Approach dirt bonus (potential-based: reward = old_dist - new_dist)
-            post_dirt_dist = self._nearest_item_dist(ax, ay, '#')
-            if pre_dirt_dist[i] < float('inf') and post_dirt_dist < float('inf'):
-                delta = pre_dirt_dist[i] - post_dirt_dist
-                if delta > 0:
-                    rewards[i] += 0.02 * delta
-
-            # Approach apple bonus
-            post_apple_dist = self._nearest_item_dist(ax, ay, 'a')
-            if pre_apple_dist[i] < float('inf') and post_apple_dist < float('inf'):
-                delta = pre_apple_dist[i] - post_apple_dist
-                if delta > 0:
-                    rewards[i] += 0.03 * delta
 
         # Spawn phase
         self._spawn_dirt()
