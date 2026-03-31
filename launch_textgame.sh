@@ -27,7 +27,7 @@ source ~/.bashrc
 conda activate py311LLM
 # Use a fixed project directory — SLURM copies the script to /var/spool,
 # so BASH_SOURCE[0] resolves to the wrong location at runtime.
-SCRIPT_DIR="/users/PAS2056/mypeter8219/Research/LLM_MARL/paper"
+SCRIPT_DIR="/users/PAS2056/mypeter8219/Research/LLM_MARL/cleanup_code"
 cd "$SCRIPT_DIR"
 module load cuda/12.4.1
 
@@ -129,14 +129,14 @@ OLD_MODEL_UPDATE_INTERVAL=1  # update old model every N groups
 
 
 # ── Role switching ────────────────────────────────────────────────────────
-ROLE_ASSIGNMENT_INTERVAL=0 # reassign agent roles every N env steps (0=disabled)
+ROLE_ASSIGNMENT_INTERVAL=10 # reassign agent roles every N env steps (0=disabled)
 TRAIN_ON_ROLE_TOKENS=true   # include role-aware action token probs in GRPO loss
 
 # ── Rewards ────────────────────────────────────────────────────────────────
 EAT_REWARD=1.0
 
 # ── Output ────────────────────────────────────────────────────────────────
-OUTPUT_DIR="./grpo_textgame_checkpoints_compound_norole_1e-6_noglobal"  # will be created if it doesn't exist
+OUTPUT_DIR="./grpo_textgame_checkpoints_compound_role_1e-6_noshaping"  # will be created if it doesn't exist
 NUM_EVAL_EPISODES=20
 
 # ── Wandb ─────────────────────────────────────────────────────────────────
